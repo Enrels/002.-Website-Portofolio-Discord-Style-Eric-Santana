@@ -272,11 +272,11 @@ export default function Portfolio() {
             className="relative inline-block max-w-2xl w-full"
           >
             <div className="absolute -top-4 -left-4 text-4xl text-primary font-serif">"</div>
-            <div className="border border-border p-6 text-xl" style={{ backgroundColor: "#282C33" }}>
+            <div className="border border-border p-6 text-xl" style={{ backgroundColor: "#282C33", color: "#ABB2BF" }}>
               {t.quoteText}
             </div>
             <div className="absolute -bottom-4 -right-4 text-4xl text-primary font-serif">"</div>
-            <div className="border border-border border-t-0 p-4 text-right" style={{ backgroundColor: "#282C33" }}>
+            <div className="border border-border border-t-0 p-4 text-right" style={{ backgroundColor: "#282C33", color: "#ABB2BF" }}>
               {t.quoteAuthor}
             </div>
           </motion.div>
@@ -359,10 +359,10 @@ export default function Portfolio() {
                 className="border border-border min-w-[180px] max-w-[280px]"
                 style={{ backgroundColor: "#282C33" }}
               >
-                <div className="p-2 border-b border-border font-medium text-white">
+                <div className="p-2 border-b border-border font-medium" style={{ color: "#ABB2BF" }}>
                   {cat.title}
                 </div>
-                <div className="p-2 text-muted-foreground text-sm leading-relaxed">
+                <div className="p-2 text-sm leading-relaxed" style={{ color: "#ABB2BF" }}>
                   {cat.skills}
                 </div>
               </motion.div>
