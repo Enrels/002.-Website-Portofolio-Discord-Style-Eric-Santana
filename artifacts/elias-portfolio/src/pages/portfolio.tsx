@@ -272,11 +272,11 @@ export default function Portfolio() {
             className="relative inline-block max-w-2xl w-full"
           >
             <div className="absolute -top-4 -left-4 text-4xl text-primary font-serif">"</div>
-            <div className="border border-border p-6 text-xl" style={{ backgroundColor: "#282C33", color: "#ABB2BF" }}>
+            <div className="p-6 text-xl" style={{ border: "1px solid #ABB2BF", backgroundColor: "#282C33", color: "#ABB2BF" }}>
               {t.quoteText}
             </div>
             <div className="absolute -bottom-4 -right-4 text-4xl text-primary font-serif">"</div>
-            <div className="border border-border border-t-0 p-4 text-right" style={{ backgroundColor: "#282C33", color: "#ABB2BF" }}>
+            <div className="p-4 text-right" style={{ border: "1px solid #ABB2BF", borderTop: "none", backgroundColor: "#282C33", color: "#ABB2BF" }}>
               {t.quoteAuthor}
             </div>
           </motion.div>
@@ -356,10 +356,10 @@ export default function Portfolio() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="border border-border min-w-[180px] max-w-[280px]"
-                style={{ backgroundColor: "#282C33" }}
+                className="min-w-[180px] max-w-[280px]"
+                style={{ border: "1px solid #ABB2BF", backgroundColor: "#282C33" }}
               >
-                <div className="p-2 border-b border-border font-medium" style={{ color: "#ABB2BF" }}>
+                <div className="p-2 font-medium" style={{ borderBottom: "1px solid #ABB2BF", color: "#ABB2BF" }}>
                   {cat.title}
                 </div>
                 <div className="p-2 text-sm leading-relaxed" style={{ color: "#ABB2BF" }}>
