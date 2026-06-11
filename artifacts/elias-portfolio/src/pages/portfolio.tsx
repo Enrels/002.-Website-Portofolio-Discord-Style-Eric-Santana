@@ -87,13 +87,13 @@ export default function Portfolio() {
             className="flex-1 space-y-6"
           >
             <h1 className="text-4xl md:text-5xl font-semibold leading-tight">
-              Eric Santana is a <span className="text-primary">web designer</span> and <span className="text-primary">front-end developer</span>
+              Junior AI Engineer | <span className="text-primary">Prompt Specialist</span> & <span className="text-primary">Automation</span>
             </h1>
             <p className="text-muted-foreground max-w-lg">
-              He crafts responsive websites where technologies meet creativity
+              I'm currently focused on building AI-powered solutions: prompt engineering, workflow automation, and creative content generation using AI tools.
             </p>
             <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">
-              Contact me !!
+              Contact me
             </Button>
           </motion.div>
           
@@ -110,7 +110,7 @@ export default function Portfolio() {
             <DotsPattern className="absolute bottom-10 right-10 text-primary z-0" />
             <div className="mt-4 p-2 border border-border inline-flex items-center gap-2 bg-background relative z-10 w-full max-w-[400px] mx-auto">
               <div className="w-3 h-3 bg-primary"></div>
-              <span className="text-muted-foreground text-sm">Currently working on <span className="text-white">Portfolio</span></span>
+              <span className="text-muted-foreground text-sm">Currently working on <span className="text-white">Freelance</span></span>
             </div>
           </motion.div>
         </section>
@@ -125,11 +125,11 @@ export default function Portfolio() {
           >
             <div className="absolute -top-4 -left-4 text-4xl text-primary font-serif">"</div>
             <div className="border border-border p-6 text-xl bg-card">
-              With great power comes great electricity bill
+              "A person who has held a knife for too long may not know what to do when handed a flower."
             </div>
             <div className="absolute -bottom-4 -right-4 text-4xl text-primary font-serif">"</div>
             <div className="border border-border border-t-0 p-4 text-right bg-card">
-              - Dr. Who
+              - Enrel
             </div>
           </motion.div>
         </section>
