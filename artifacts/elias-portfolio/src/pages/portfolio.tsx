@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 import heroImg from "@/assets/hero-portrait.png";
+import logoImg from "@/assets/logo.png";
 import aboutImg from "@/assets/about-portrait.png";
 import chertNodesImg from "@/assets/project-chertnodes.png";
 import protectXImg from "@/assets/project-protectx.png";
@@ -55,7 +56,7 @@ export default function Portfolio() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-sm border-b border-border/10">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <a href="#home" className="text-xl font-bold flex items-center gap-2">
-            <span className="text-primary">✦</span> Elias
+            <img src={logoImg} alt="Eric Santana" className="h-8 w-auto" style={{ filter: "invert(1) brightness(2)" }} /> Eric Santana
           </a>
           <nav className="hidden md:flex items-center gap-8">
             {["home", "projects", "skills", "about-me", "contacts"].map((section) => (
@@ -86,7 +87,7 @@ export default function Portfolio() {
             className="flex-1 space-y-6"
           >
             <h1 className="text-4xl md:text-5xl font-semibold leading-tight">
-              Elias is a <span className="text-primary">web designer</span> and <span className="text-primary">front-end developer</span>
+              Eric Santana is a <span className="text-primary">web designer</span> and <span className="text-primary">front-end developer</span>
             </h1>
             <p className="text-muted-foreground max-w-lg">
               He crafts responsive websites where technologies meet creativity
@@ -257,7 +258,7 @@ export default function Portfolio() {
               className="flex-1 space-y-6"
             >
               <p className="text-muted-foreground">
-                Hello, I'm Elias!
+                Hello, I'm Eric Santana!
               </p>
               <p className="text-muted-foreground">
                 I'm a self-taught front-end developer based in Kyiv, Ukraine. I can develop responsive websites from scratch and make them into modern user-friendly web experiences.
@@ -326,7 +327,7 @@ export default function Portfolio() {
           <div>
             <div className="flex items-center gap-4 mb-4">
               <span className="text-xl font-bold flex items-center gap-2 text-white">
-                <span className="text-primary">✦</span> Elias
+                <img src={logoImg} alt="Eric Santana" className="h-6 w-auto inline-block mr-1" style={{ filter: "invert(1) brightness(2)" }} /> Eric Santana
               </span>
               <a href="mailto:elias@elias-dev.nl" className="text-muted-foreground hover:text-white transition-colors">
                 elias@elias-dev.nl
@@ -345,7 +346,7 @@ export default function Portfolio() {
           </div>
         </div>
         <div className="text-center text-muted-foreground text-sm mt-12">
-          © Copyright 2022. Made by Elias
+          © Copyright 2022. Made by Eric Santana
         </div>
       </footer>
     </div>
