@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Github, Linkedin, Mail, Instagram, MoreVertical, Moon, Sun, Download } from "lucide-react";
+import { Github, Linkedin, Mail, Instagram, MoreVertical, Moon, Sun, Download, Menu, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -111,7 +111,7 @@ const translations = {
   },
 };
 
-/* ─── Icon components ───────────────────────────────────────────── */
+/* ─── SVG Icons ─────────────────────────────────────────────────── */
 const DiscordIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
     <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.001.022.015.043.03.056a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
@@ -158,6 +158,7 @@ const ThemeSwitch = ({ isDark, onToggle, accent }: { isDark: boolean; onToggle: 
     onClick={onToggle}
     className="relative inline-flex items-center w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none"
     style={{ backgroundColor: isDark ? accent : "#ccc" }}
+    aria-label="Toggle theme"
   >
     <span
       className="inline-block w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-300"
@@ -173,9 +174,11 @@ export default function Portfolio() {
   const [activeSection, setActiveSection] = useState("home");
   const [lang, setLang] = useState<Lang>("EN");
   const [isDark, setIsDark] = useState(true);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [kebabOpen, setKebabOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const kebabRef = useRef<HTMLDivElement>(null);
   const t = translations[lang];
+  const navIds = ["home", "projects", "skills", "about-me", "contacts"];
 
   /* Apply theme CSS variables */
   useEffect(() => {
@@ -201,205 +204,269 @@ export default function Portfolio() {
     }
   }, [isDark]);
 
-  /* Close menu when clicking outside */
+  /* Close kebab when clicking outside */
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
+      if (kebabRef.current && !kebabRef.current.contains(e.target as Node)) {
+        setKebabOpen(false);
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  /* Lock body scroll when mobile menu is open */
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileMenuOpen]);
+
   /* Scroll spy */
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ["home", "projects", "skills", "about-me", "contacts"];
-      for (const section of sections) {
-        const el = document.getElementById(section);
+      for (const id of navIds) {
+        const el = document.getElementById(id);
         if (el) {
           const rect = el.getBoundingClientRect();
-          if (rect.top >= -100 && rect.top <= 200) setActiveSection(section);
+          if (rect.top >= -100 && rect.top <= 200) { setActiveSection(id); break; }
         }
       }
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  /* Helpers */
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    setMobileMenuOpen(false);
+  };
+
   /* ── Theme-derived values ── */
-  const pageBg     = isDark ? "#282C33"  : "#F5F7FA";
-  const boxBg      = isDark ? "#282C33"  : "#FFFFFF";
-  const accentColor = isDark ? "#C778DD" : "#1591DC";
+  const pageBg      = isDark ? "#282C33"  : "#F5F7FA";
+  const boxBg       = isDark ? "#282C33"  : "#FFFFFF";
+  const accentColor = isDark ? "#C778DD"  : "#1591DC";
   const accentGlow  = isDark ? "#C778DD88" : "#1591DC88";
-  const headingColor = isDark ? "#ffffff" : "#1a1a1a";
-  const mutedColor   = isDark ? "#ABB2BF" : "#444444";
+  const headingColor = isDark ? "#ffffff"  : "#1a1a1a";
+  const mutedColor   = isDark ? "#ABB2BF"  : "#444444";
   const logoFilter   = isDark
     ? "brightness(0) saturate(100%) invert(59%) sepia(48%) saturate(800%) hue-rotate(250deg) brightness(1.1) drop-shadow(0 0 8px #C778DD)"
     : "brightness(0) saturate(100%) invert(39%) sepia(89%) saturate(600%) hue-rotate(173deg) brightness(1.1) drop-shadow(0 0 8px #1591DC)";
-  const dotKebabColor = accentColor;
-  const navIds = ["home", "projects", "skills", "about-me", "contacts"];
+  const cardBg = isDark ? "hsl(240 28% 16%)" : "#ffffff";
 
   return (
-    <div className="min-h-screen text-foreground font-mono" style={{ backgroundColor: pageBg }}>
+    <div className="min-h-screen font-mono overflow-x-hidden" style={{ backgroundColor: pageBg, color: headingColor }}>
 
-      {/* ── Sidebar Socials ── */}
-      <div className="fixed left-4 top-0 h-full flex-col items-center justify-center gap-4 hidden lg:flex z-40">
-        <div className="w-px h-32" style={{ backgroundColor: mutedColor + "55" }}></div>
-        <a href="https://github.com/Enrels" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors" style={{ color: mutedColor }}><Github size={20} /></a>
-        <a href="https://www.linkedin.com/in/eric-santana-siahaan-2199a92b9/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors" style={{ color: mutedColor }}><Linkedin size={20} /></a>
-        <a href="https://mail.google.com/mail/u/2/#inbox?compose=CllgCJlKGDGMgnRggcFHqwpsVhdKBTBJpPlVRFpbVXLsqjKLmLtslwtnHJSgddcVPXtRrTbGtGq" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors" style={{ color: mutedColor }}><Mail size={20} /></a>
-        <div className="w-px h-32" style={{ backgroundColor: mutedColor + "55" }}></div>
+      {/* ── Desktop Sidebar Socials ── */}
+      <div className="fixed left-3 top-0 h-full flex-col items-center justify-center gap-4 hidden lg:flex z-40" style={{ color: mutedColor }}>
+        <div className="w-px h-24 opacity-30" style={{ backgroundColor: mutedColor }}/>
+        <a href="https://github.com/Enrels" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors p-1"><Github size={20}/></a>
+        <a href="https://www.linkedin.com/in/eric-santana-siahaan-2199a92b9/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors p-1"><Linkedin size={20}/></a>
+        <a href="mailto:santanixproject@gmail.com" className="hover:text-primary transition-colors p-1"><Mail size={20}/></a>
+        <div className="w-px h-24 opacity-30" style={{ backgroundColor: mutedColor }}/>
       </div>
 
       {/* ── Header ── */}
       <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b border-border/10" style={{ backgroundColor: pageBg + "ee" }}>
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <a href="#home" className="text-xl font-bold flex items-center gap-2">
-            <img src={logoImg} alt="Eric Santana" className="h-8 w-auto" style={{ filter: logoFilter }} />
-            <span style={{ color: accentColor, textShadow: `0 0 10px ${accentGlow}` }}>Eric Santana</span>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+
+          {/* Logo */}
+          <a href="#home" onClick={() => scrollTo("home")} className="flex items-center gap-2 shrink-0">
+            <img src={logoImg} alt="logo" className="h-7 w-auto" style={{ filter: logoFilter }}/>
+            <span className="text-base sm:text-lg font-bold" style={{ color: accentColor, textShadow: `0 0 10px ${accentGlow}` }}>
+              Eric Santana
+            </span>
           </a>
 
-          <nav className="hidden md:flex items-center gap-6">
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-4 lg:gap-6">
             {navIds.map((id, i) => (
-              <a
-                key={id}
-                href={`#${id}`}
+              <button key={id} onClick={() => scrollTo(id)}
                 className="text-sm hover:text-primary transition-colors"
-                style={{ color: activeSection === id ? headingColor : mutedColor }}
-              >
+                style={{ color: activeSection === id ? headingColor : mutedColor }}>
                 <span style={{ color: accentColor }}>#</span>{t.nav[i]}
-              </a>
+              </button>
             ))}
 
-            {/* Lang toggle */}
-            <div className="flex items-center gap-2 text-sm" style={{ color: mutedColor }}>
-              <span onClick={() => setLang("EN")} className="cursor-pointer hover:text-primary transition-colors" style={{ color: lang === "EN" ? headingColor : mutedColor }}>EN</span>
-              <span style={{ opacity: 0.5 }}>/</span>
-              <span onClick={() => setLang("ID")} className="cursor-pointer hover:text-primary transition-colors" style={{ color: lang === "ID" ? headingColor : mutedColor }}>ID</span>
+            {/* Lang */}
+            <div className="flex items-center gap-1.5 text-sm select-none">
+              <span onClick={() => setLang("EN")} className="cursor-pointer hover:text-primary transition-colors px-1 py-0.5"
+                style={{ color: lang === "EN" ? headingColor : mutedColor }}>EN</span>
+              <span style={{ color: mutedColor, opacity: 0.5 }}>/</span>
+              <span onClick={() => setLang("ID")} className="cursor-pointer hover:text-primary transition-colors px-1 py-0.5"
+                style={{ color: lang === "ID" ? headingColor : mutedColor }}>ID</span>
             </div>
 
-            {/* Kebab menu */}
-            <div className="relative" ref={menuRef}>
-              <button
-                onClick={() => setMenuOpen(v => !v)}
-                className="flex flex-col items-center justify-center gap-[4px] p-2 hover:opacity-80 transition-opacity"
-                aria-label="Menu"
-              >
-                {[0, 1, 2].map(i => (
-                  <span
-                    key={i}
-                    className="block w-[4px] h-[4px] rounded-full"
-                    style={{ backgroundColor: dotKebabColor, boxShadow: `0 0 6px ${accentGlow}` }}
-                  />
+            {/* Kebab */}
+            <div className="relative" ref={kebabRef}>
+              <button onClick={() => setKebabOpen(v => !v)}
+                className="flex flex-col items-center justify-center gap-[4px] p-2 min-w-[36px] min-h-[36px]"
+                aria-label="Theme menu">
+                {[0,1,2].map(i => (
+                  <span key={i} className="block w-[4px] h-[4px] rounded-full"
+                    style={{ backgroundColor: accentColor, boxShadow: `0 0 6px ${accentGlow}` }}/>
                 ))}
               </button>
-
               <AnimatePresence>
-                {menuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9, y: -8 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: -8 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-10 rounded-md shadow-2xl border border-border z-50 p-4 min-w-[180px]"
-                    style={{ backgroundColor: isDark ? "#1e2128" : "#ffffff" }}
-                  >
+                {kebabOpen && (
+                  <motion.div initial={{ opacity: 0, scale: 0.9, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: -8 }} transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-11 rounded-md shadow-2xl border border-border z-50 p-4 min-w-[180px]"
+                    style={{ backgroundColor: isDark ? "#1e2128" : "#ffffff" }}>
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-2">
-                        {isDark ? <Moon size={14} style={{ color: accentColor }} /> : <Sun size={14} style={{ color: accentColor }} />}
-                        <span className="text-sm font-mono" style={{ color: mutedColor }}>
+                        {isDark ? <Moon size={14} style={{ color: accentColor }}/> : <Sun size={14} style={{ color: accentColor }}/>}
+                        <span className="text-sm" style={{ color: mutedColor }}>
                           {isDark ? t.darkMode : t.lightMode}
                         </span>
                       </div>
-                      <ThemeSwitch isDark={isDark} onToggle={() => setIsDark(d => !d)} accent={accentColor} />
+                      <ThemeSwitch isDark={isDark} onToggle={() => setIsDark(d => !d)} accent={accentColor}/>
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
           </nav>
+
+          {/* Mobile right controls */}
+          <div className="flex md:hidden items-center gap-3">
+            {/* Lang */}
+            <div className="flex items-center gap-1 text-xs select-none">
+              <span onClick={() => setLang("EN")} className="cursor-pointer px-1 py-1"
+                style={{ color: lang === "EN" ? accentColor : mutedColor }}>EN</span>
+              <span style={{ color: mutedColor }}>/</span>
+              <span onClick={() => setLang("ID")} className="cursor-pointer px-1 py-1"
+                style={{ color: lang === "ID" ? accentColor : mutedColor }}>ID</span>
+            </div>
+            {/* Hamburger */}
+            <button onClick={() => setMobileMenuOpen(v => !v)}
+              className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              style={{ color: headingColor }}>
+              {mobileMenuOpen ? <X size={22}/> : <Menu size={22}/>}
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 pt-32 pb-20">
+      {/* ── Mobile Full-Screen Menu ── */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 flex flex-col pt-20 px-6 pb-10"
+            style={{ backgroundColor: pageBg }}>
+            <nav className="flex flex-col gap-5 mt-4">
+              {navIds.map((id, i) => (
+                <button key={id} onClick={() => scrollTo(id)}
+                  className="text-left text-xl font-medium hover:text-primary transition-colors"
+                  style={{ color: activeSection === id ? accentColor : headingColor }}>
+                  <span style={{ color: accentColor }}>#</span>{t.nav[i]}
+                </button>
+              ))}
+            </nav>
+
+            {/* Theme toggle inside mobile menu */}
+            <div className="mt-10 pt-6 border-t flex items-center justify-between" style={{ borderColor: mutedColor + "33" }}>
+              <div className="flex items-center gap-2">
+                {isDark ? <Moon size={16} style={{ color: accentColor }}/> : <Sun size={16} style={{ color: accentColor }}/>}
+                <span className="text-sm" style={{ color: mutedColor }}>
+                  {isDark ? t.darkMode : t.lightMode}
+                </span>
+              </div>
+              <ThemeSwitch isDark={isDark} onToggle={() => setIsDark(d => !d)} accent={accentColor}/>
+            </div>
+
+            {/* Mobile social links */}
+            <div className="mt-6 flex items-center gap-5" style={{ color: mutedColor }}>
+              <a href="https://github.com/Enrels" target="_blank" rel="noopener noreferrer" className="hover:text-primary p-1"><Github size={22}/></a>
+              <a href="https://www.linkedin.com/in/eric-santana-siahaan-2199a92b9/" target="_blank" rel="noopener noreferrer" className="hover:text-primary p-1"><Linkedin size={22}/></a>
+              <a href="mailto:santanixproject@gmail.com" className="hover:text-primary p-1"><Mail size={22}/></a>
+              <a href="https://www.instagram.com/enrelacuz/" target="_blank" rel="noopener noreferrer" className="hover:text-primary p-1"><Instagram size={22}/></a>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Main Content ── */}
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-24 sm:pt-32 pb-20">
 
         {/* ── Hero ── */}
-        <section id="home" className="min-h-[80vh] flex flex-col md:flex-row items-center justify-between gap-12">
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className="flex-1 space-y-6">
-            <h1 className="text-4xl md:text-5xl font-semibold leading-tight" style={{ color: headingColor }}>
+        <section id="home" className="min-h-[80vh] flex flex-col md:flex-row items-center justify-between gap-10 py-10">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}
+            className="flex-1 space-y-5 text-center md:text-left order-2 md:order-1">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold leading-tight" style={{ color: headingColor }}>
               {t.heroTitle(accentColor)}
             </h1>
-            <p className="max-w-lg" style={{ color: mutedColor }}>{t.heroSub}</p>
-            <Button
-              variant="outline"
-              className="text-sm px-5 py-2"
-              style={{ borderColor: accentColor, color: accentColor }}
-              onClick={() => document.getElementById("contacts")?.scrollIntoView({ behavior: "smooth" })}
-            >
-              {t.heroBtn}
-            </Button>
+            <p className="text-sm sm:text-base max-w-lg mx-auto md:mx-0" style={{ color: mutedColor }}>{t.heroSub}</p>
+            <div className="flex justify-center md:justify-start">
+              <Button variant="outline" className="text-sm px-5 py-2 min-h-[44px]"
+                style={{ borderColor: accentColor, color: accentColor }}
+                onClick={() => scrollTo("contacts")}>
+                {t.heroBtn}
+              </Button>
+            </div>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="flex-1 flex flex-col items-center relative">
-            <div className="absolute top-10 left-10 z-0" style={{ color: accentColor }}>
-              <svg width="40" height="40" viewBox="0 0 100 100" fill="none"><path d="M50 0L100 50L50 100L0 50L50 0Z" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="2"/></svg>
-            </div>
-            <img src={heroRealImg} alt="Eric Santana" className="w-full max-w-[400px] object-cover object-top relative z-10 rounded-sm" style={{ maxHeight: "480px", borderBottom: `1px solid ${accentColor}` }} />
-            <DotsPattern className="absolute bottom-16 right-10 z-0" color={accentColor} />
-            <div className="mt-4 p-2 inline-flex items-center gap-2 relative z-10 w-full max-w-[400px]" style={{ backgroundColor: pageBg, border: `1px solid ${mutedColor}44` }}>
-              <div className="w-3 h-3" style={{ backgroundColor: accentColor }}></div>
-              <span className="text-sm" style={{ color: mutedColor }}>{t.workingOn} <span style={{ color: headingColor }}>{t.freelance}</span></span>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex-1 flex flex-col items-center relative order-1 md:order-2 w-full">
+            <img src={heroRealImg} alt="Eric Santana" className="w-full max-w-[320px] sm:max-w-[380px] md:max-w-[400px] object-cover object-top rounded-sm relative z-10"
+              style={{ maxHeight: "420px", borderBottom: `1px solid ${accentColor}` }}/>
+            <div className="mt-3 p-2 inline-flex items-center gap-2 relative z-10 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[400px]"
+              style={{ backgroundColor: pageBg, border: `1px solid ${mutedColor}44` }}>
+              <div className="w-3 h-3 shrink-0" style={{ backgroundColor: accentColor }}/>
+              <span className="text-xs sm:text-sm" style={{ color: mutedColor }}>
+                {t.workingOn} <span style={{ color: headingColor }}>{t.freelance}</span>
+              </span>
             </div>
           </motion.div>
         </section>
 
         {/* ── Quote ── */}
-        <section className="py-20 flex justify-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative inline-block max-w-2xl w-full">
-            <div className="absolute -top-4 -left-4 text-4xl font-serif" style={{ color: accentColor }}>"</div>
-            <div className="p-6 text-xl" style={{ border: "1px solid #ABB2BF", backgroundColor: boxBg, color: "#ABB2BF" }}>
+        <section className="py-12 sm:py-20 flex justify-center">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="relative inline-block w-full max-w-2xl">
+            <div className="absolute -top-3 -left-3 text-3xl font-serif" style={{ color: accentColor }}>"</div>
+            <div className="p-5 sm:p-6 text-base sm:text-xl" style={{ border: "1px solid #ABB2BF", backgroundColor: boxBg, color: "#ABB2BF" }}>
               {t.quoteText}
             </div>
-            <div className="absolute -bottom-4 -right-4 text-4xl font-serif" style={{ color: accentColor }}>"</div>
-            <div className="p-4 text-right" style={{ border: "1px solid #ABB2BF", borderTop: "none", backgroundColor: boxBg, color: "#ABB2BF" }}>
+            <div className="p-3 sm:p-4 text-right" style={{ border: "1px solid #ABB2BF", borderTop: "none", backgroundColor: boxBg, color: "#ABB2BF" }}>
               {t.quoteAuthor}
             </div>
           </motion.div>
         </section>
 
         {/* ── Projects ── */}
-        <section id="projects" className="py-20">
-          <div className="flex items-center justify-between mb-12">
-            <div className="flex items-center gap-4">
-              <h2 className="text-3xl font-medium" style={{ color: headingColor }}><span style={{ color: accentColor }}>#</span>{t.projectsTitle}</h2>
-              <div className="w-32 h-px" style={{ backgroundColor: accentColor + "80" }}></div>
+        <section id="projects" className="py-12 sm:py-20">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-8 sm:mb-12">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <h2 className="text-2xl sm:text-3xl font-medium" style={{ color: headingColor }}>
+                <span style={{ color: accentColor }}>#</span>{t.projectsTitle}
+              </h2>
+              <div className="w-16 sm:w-32 h-px" style={{ backgroundColor: accentColor + "80" }}/>
             </div>
-            <a href="#" className="text-sm flex items-center gap-2 hover:text-primary transition-colors" style={{ color: headingColor }}>
-              {t.viewAll} →
-            </a>
+            <a href="#" className="text-sm hover:text-primary transition-colors" style={{ color: headingColor }}>{t.viewAll} →</a>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl">
             {[
-              { title: t.project1Title, desc: t.project1Desc, tags: t.project1Tags, placeholder: <GraphicDesignPlaceholder isDark={isDark} /> },
-              { title: t.project2Title, desc: t.project2Desc, tags: t.project2Tags, placeholder: <ThreeDPlaceholder isDark={isDark} /> },
+              { title: t.project1Title, desc: t.project1Desc, tags: t.project1Tags, placeholder: <GraphicDesignPlaceholder isDark={isDark}/> },
+              { title: t.project2Title, desc: t.project2Desc, tags: t.project2Tags, placeholder: <ThreeDPlaceholder isDark={isDark}/> },
             ].map((project, i) => (
-              <motion.div key={project.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                className="flex flex-col hover:opacity-90 transition-opacity"
-                style={{ border: `1px solid ${mutedColor}55`, backgroundColor: isDark ? "hsl(240 28% 16%)" : "#ffffff" }}
-              >
+              <motion.div key={project.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+                className="flex flex-col" style={{ border: `1px solid ${mutedColor}55`, backgroundColor: cardBg }}>
                 <div className="aspect-video overflow-hidden" style={{ borderBottom: `1px solid ${mutedColor}55` }}>
                   {project.placeholder}
                 </div>
-                <div className="p-3 text-sm" style={{ borderBottom: `1px solid ${mutedColor}55`, color: mutedColor }}>
+                <div className="p-3 text-xs sm:text-sm" style={{ borderBottom: `1px solid ${mutedColor}55`, color: mutedColor }}>
                   {project.tags.join("  ")}
                 </div>
                 <div className="p-4 flex-1 flex flex-col">
-                  <h3 className="text-xl font-medium mb-2" style={{ color: headingColor }}>{project.title}</h3>
-                  <p className="mb-4 flex-1" style={{ color: mutedColor }}>{project.desc}</p>
-                  <Button variant="outline" className="rounded-none h-9 px-4 w-fit" style={{ borderColor: accentColor, color: headingColor }}>
+                  <h3 className="text-lg sm:text-xl font-medium mb-2" style={{ color: headingColor }}>{project.title}</h3>
+                  <p className="text-sm mb-4 flex-1" style={{ color: mutedColor }}>{project.desc}</p>
+                  <Button variant="outline" className="rounded-none h-9 px-4 w-fit text-sm min-h-[44px]"
+                    style={{ borderColor: accentColor, color: headingColor }}>
                     {t.viewBtn} →
                   </Button>
                 </div>
@@ -409,101 +476,106 @@ export default function Portfolio() {
         </section>
 
         {/* ── Skills ── */}
-        <section id="skills" className="py-20">
-          <div className="flex items-center gap-4 mb-8">
-            <h2 className="text-3xl font-medium" style={{ color: headingColor }}><span style={{ color: accentColor }}>#</span>{t.skillsTitle}</h2>
-            <div className="w-32 h-px" style={{ backgroundColor: accentColor + "80" }}></div>
+        <section id="skills" className="py-12 sm:py-20">
+          <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl font-medium" style={{ color: headingColor }}>
+              <span style={{ color: accentColor }}>#</span>{t.skillsTitle}
+            </h2>
+            <div className="w-16 sm:w-32 h-px" style={{ backgroundColor: accentColor + "80" }}/>
           </div>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-3 sm:gap-4">
             {[
               { title: t.langTitle,   skills: t.langSkills },
               { title: t.toolsTitle,  skills: t.toolsSkills },
               { title: t.othersTitle, skills: t.othersSkills },
             ].map((cat, i) => (
-              <motion.div key={cat.title} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                className="min-w-[180px] max-w-[280px]"
-                style={{ border: "1px solid #ABB2BF", backgroundColor: boxBg }}
-              >
-                <div className="p-2 font-medium" style={{ borderBottom: "1px solid #ABB2BF", color: "#ABB2BF" }}>{cat.title}</div>
-                <div className="p-2 text-sm leading-relaxed" style={{ color: "#ABB2BF" }}>{cat.skills}</div>
+              <motion.div key={cat.title} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+                className="flex-1 min-w-[150px] max-w-[280px]"
+                style={{ border: "1px solid #ABB2BF", backgroundColor: boxBg }}>
+                <div className="p-2 font-medium text-sm" style={{ borderBottom: "1px solid #ABB2BF", color: "#ABB2BF" }}>{cat.title}</div>
+                <div className="p-2 text-xs sm:text-sm leading-relaxed" style={{ color: "#ABB2BF" }}>{cat.skills}</div>
               </motion.div>
             ))}
           </div>
         </section>
 
         {/* ── About Me ── */}
-        <section id="about-me" className="py-20">
-          <div className="flex items-center gap-4 mb-12">
-            <h2 className="text-3xl font-medium" style={{ color: headingColor }}><span style={{ color: accentColor }}>#</span>{t.aboutTitle}</h2>
-            <div className="w-64 h-px" style={{ backgroundColor: accentColor + "80" }}></div>
+        <section id="about-me" className="py-12 sm:py-20">
+          <div className="flex items-center gap-3 sm:gap-4 mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-medium" style={{ color: headingColor }}>
+              <span style={{ color: accentColor }}>#</span>{t.aboutTitle}
+            </h2>
+            <div className="w-24 sm:w-64 h-px" style={{ backgroundColor: accentColor + "80" }}/>
           </div>
-          <div className="flex flex-col md:flex-row gap-12 items-start">
-            <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="flex-1 space-y-4">
+          <div className="flex flex-col md:flex-row gap-10 sm:gap-12 items-start">
+            <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+              className="flex-1 space-y-4 order-2 md:order-1">
               {t.aboutText.map((block, i) =>
                 Array.isArray(block) ? (
-                  <ul key={i} className="space-y-2 pl-2">
+                  <ul key={i} className="space-y-2 pl-1">
                     {block.map((item, j) => (
-                      <li key={j} className="flex gap-2" style={{ color: mutedColor }}>
-                        <span style={{ color: accentColor }} className="shrink-0">\</span>
+                      <li key={j} className="flex gap-2 text-sm sm:text-base" style={{ color: mutedColor }}>
+                        <span style={{ color: accentColor }} className="shrink-0 mt-0.5">\</span>
                         <span>{item}</span>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p key={i} style={{ color: mutedColor }}>{block}</p>
+                  <p key={i} className="text-sm sm:text-base" style={{ color: mutedColor }}>{block}</p>
                 )
               )}
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="flex-1 relative flex justify-center">
-              <DotsPattern className="absolute top-10 left-0 z-0" color={accentColor} />
-              <div className="flex flex-col items-center relative z-10">
-                <img src={aboutRealImg} alt="Eric Santana" className="w-full max-w-[320px] object-cover rounded-sm" style={{ maxHeight: "420px", objectPosition: "top", borderBottom: `1px solid ${accentColor}` }} />
+            <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+              className="flex-1 flex justify-center order-1 md:order-2 w-full">
+              <div className="flex flex-col items-center">
+                <img src={aboutRealImg} alt="Eric Santana" className="w-full max-w-[280px] sm:max-w-[320px] object-cover rounded-sm"
+                  style={{ maxHeight: "400px", objectPosition: "top", borderBottom: `1px solid ${accentColor}` }}/>
                 <p className="mt-3 text-xs font-mono" style={{ color: accentColor }}>{t.generatedBy}</p>
-                <a
-                  href="/cv.pdf"
-                  download="CV_Eric_Santana_Siahaan.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 inline-flex items-center gap-2 px-5 py-2 text-sm font-mono transition-opacity hover:opacity-80"
-                  style={{ border: `1px solid ${accentColor}`, color: accentColor, backgroundColor: "transparent" }}
-                >
-                  <Download size={14} />
+                <a href="/cv.pdf" download="CV_Eric_Santana_Siahaan.pdf" target="_blank" rel="noopener noreferrer"
+                  className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-mono transition-opacity hover:opacity-80 min-h-[44px]"
+                  style={{ border: `1px solid ${accentColor}`, color: accentColor, backgroundColor: "transparent" }}>
+                  <Download size={14}/>
                   {t.downloadCV}
                 </a>
               </div>
-              <DotsPattern className="absolute bottom-10 right-0 z-0" color={accentColor} />
             </motion.div>
           </div>
         </section>
 
         {/* ── Contacts ── */}
-        <section id="contacts" className="py-20">
-          <div className="flex items-center gap-4 mb-12">
-            <h2 className="text-3xl font-medium" style={{ color: headingColor }}><span style={{ color: accentColor }}>#</span>{t.contactsTitle}</h2>
-            <div className="w-32 h-px" style={{ backgroundColor: accentColor + "80" }}></div>
+        <section id="contacts" className="py-12 sm:py-20">
+          <div className="flex items-center gap-3 sm:gap-4 mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-medium" style={{ color: headingColor }}>
+              <span style={{ color: accentColor }}>#</span>{t.contactsTitle}
+            </h2>
+            <div className="w-16 sm:w-32 h-px" style={{ backgroundColor: accentColor + "80" }}/>
           </div>
-          <div className="flex flex-col gap-10 items-start">
-            <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="max-w-md" style={{ color: mutedColor }}>
+          <div className="flex flex-col gap-8 items-start">
+            <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+              className="max-w-md text-sm sm:text-base" style={{ color: mutedColor }}>
               {t.contactsText}
             </motion.p>
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              className="p-6 w-full max-w-sm mx-auto"
-              style={{ border: `1px solid ${mutedColor}55`, backgroundColor: isDark ? "hsl(240 28% 16%)" : "#ffffff" }}
-            >
-              <h3 className="font-medium mb-5 text-lg" style={{ color: headingColor }}>{t.messageMe}</h3>
-              <div className="space-y-3 text-sm">
-                <a href="https://wa.me/6287840105200" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-primary transition-colors" style={{ color: mutedColor }}>
-                  <span style={{ color: accentColor }}><WhatsAppIcon size={16} /></span>+62 878-4010-5200 (ID)
+              className="p-5 sm:p-6 w-full max-w-sm"
+              style={{ border: `1px solid ${mutedColor}55`, backgroundColor: cardBg }}>
+              <h3 className="font-medium mb-5 text-base sm:text-lg" style={{ color: headingColor }}>{t.messageMe}</h3>
+              <div className="space-y-4 text-sm">
+                <a href="https://wa.me/6287840105200" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-3 hover:text-primary transition-colors min-h-[40px]" style={{ color: mutedColor }}>
+                  <span style={{ color: accentColor }}><WhatsAppIcon size={16}/></span>+62 878-4010-5200 (ID)
                 </a>
-                <a href="mailto:santanixproject@gmail.com" className="flex items-center gap-3 hover:text-primary transition-colors" style={{ color: mutedColor }}>
-                  <Mail size={16} style={{ color: accentColor }} />santanixproject@gmail.com
+                <a href="mailto:santanixproject@gmail.com"
+                  className="flex items-center gap-3 hover:text-primary transition-colors min-h-[40px]" style={{ color: mutedColor }}>
+                  <Mail size={16} style={{ color: accentColor }}/>santanixproject@gmail.com
                 </a>
-                <div className="flex items-center gap-3" style={{ color: mutedColor }}>
-                  <span style={{ color: accentColor }}><DiscordIcon size={16} /></span>Enrel#6886
+                <div className="flex items-center gap-3 min-h-[40px]" style={{ color: mutedColor }}>
+                  <span style={{ color: accentColor }}><DiscordIcon size={16}/></span>Enrel#6886
                 </div>
-                <a href="https://www.instagram.com/enrelacuz/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-primary transition-colors" style={{ color: mutedColor }}>
-                  <Instagram size={16} style={{ color: accentColor }} />@enrelacuz
+                <a href="https://www.instagram.com/enrelacuz/" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-3 hover:text-primary transition-colors min-h-[40px]" style={{ color: mutedColor }}>
+                  <Instagram size={16} style={{ color: accentColor }}/>@enrelacuz
                 </a>
               </div>
             </motion.div>
@@ -512,30 +584,30 @@ export default function Portfolio() {
       </main>
 
       {/* ── Footer ── */}
-      <footer className="border-t mt-20 py-8" style={{ borderColor: mutedColor + "33", backgroundColor: pageBg }}>
-        <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row justify-between items-start gap-8">
+      <footer className="border-t py-8 sm:py-10" style={{ borderColor: mutedColor + "33", backgroundColor: pageBg }}>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-start gap-8">
           <div>
-            <div className="flex items-center gap-3 mb-3">
-              <img src={logoImg} alt="Eric Santana" className="h-6 w-auto" style={{ filter: logoFilter }} />
-              <span className="text-xl font-bold" style={{ color: accentColor, textShadow: `0 0 10px ${accentGlow}` }}>Eric Santana</span>
+            <div className="flex items-center gap-2 mb-3">
+              <img src={logoImg} alt="Eric Santana" className="h-6 w-auto" style={{ filter: logoFilter }}/>
+              <span className="text-lg font-bold" style={{ color: accentColor, textShadow: `0 0 10px ${accentGlow}` }}>Eric Santana</span>
             </div>
-            <a href="mailto:santanixproject@gmail.com" className="text-sm block mb-2 hover:text-primary transition-colors" style={{ color: mutedColor }}>
+            <a href="mailto:santanixproject@gmail.com" className="text-xs sm:text-sm block mb-2 hover:text-primary transition-colors" style={{ color: mutedColor }}>
               santanixproject@gmail.com
             </a>
-            <p className="text-sm" style={{ color: mutedColor }}>{t.footerTagline}</p>
+            <p className="text-xs sm:text-sm" style={{ color: mutedColor }}>{t.footerTagline}</p>
           </div>
-          <div className="md:text-right">
-            <h3 className="text-xl font-medium mb-4" style={{ color: headingColor }}>{t.media}</h3>
-            <div className="flex items-center gap-4 justify-start md:justify-end" style={{ color: mutedColor }}>
-              <a href="https://github.com/Enrels" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Github size={20} /></a>
-              <a href="https://wa.me/6287840105200" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><WhatsAppIcon size={20} /></a>
-              <a href="https://www.linkedin.com/in/eric-santana-siahaan-2199a92b9/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Linkedin size={20} /></a>
-              <a href="https://discord.com/users/Enrel" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><DiscordIcon size={20} /></a>
-              <a href="https://www.instagram.com/enrelacuz/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Instagram size={20} /></a>
+          <div>
+            <h3 className="text-lg font-medium mb-4" style={{ color: headingColor }}>{t.media}</h3>
+            <div className="flex items-center gap-4" style={{ color: mutedColor }}>
+              <a href="https://github.com/Enrels" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors p-1"><Github size={20}/></a>
+              <a href="https://wa.me/6287840105200" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors p-1"><WhatsAppIcon size={20}/></a>
+              <a href="https://www.linkedin.com/in/eric-santana-siahaan-2199a92b9/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors p-1"><Linkedin size={20}/></a>
+              <a href="https://discord.com/users/Enrel" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors p-1"><DiscordIcon size={20}/></a>
+              <a href="https://www.instagram.com/enrelacuz/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors p-1"><Instagram size={20}/></a>
             </div>
           </div>
         </div>
-        <div className="text-center text-sm mt-12" style={{ color: accentColor, textShadow: `0 0 8px ${accentGlow}` }}>
+        <div className="text-center text-xs sm:text-sm mt-10" style={{ color: accentColor, textShadow: `0 0 8px ${accentGlow}` }}>
           {t.copyright}
         </div>
       </footer>
