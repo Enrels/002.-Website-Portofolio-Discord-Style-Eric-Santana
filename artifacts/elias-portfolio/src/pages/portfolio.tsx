@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Github, Linkedin, Mail, Instagram, MoreVertical, Moon, Sun, Download, Menu, X } from "lucide-react";
+import { Github, Linkedin, Mail, Instagram, Moon, Sun, Download, Menu, X, Eye } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -18,6 +18,8 @@ const translations = {
     heroBtn: "Contact me",
     workingOn: "Currently working on",
     freelance: "Freelance",
+    visitedTimes: (n: string) => `Visited ${n} times`,
+    visitors: "visitors",
     quoteText: '"A person who has held a knife for too long may not know what to do when handed a flower."',
     quoteAuthor: "- Enrel",
     projectsTitle: "projects",
@@ -68,6 +70,8 @@ const translations = {
     heroBtn: "Hubungi saya",
     workingOn: "Sedang mengerjakan",
     freelance: "Freelance",
+    visitedTimes: (n: string) => `Dikunjungi ${n} kali`,
+    visitors: "pengunjung",
     quoteText: '"Seseorang yang terlalu lama memegang pisau mungkin tidak tahu harus berbuat apa ketika diberi bunga."',
     quoteAuthor: "- Enrel",
     projectsTitle: "proyek",
@@ -111,6 +115,25 @@ const translations = {
   },
 };
 
+/* ─── Hooks ─────────────────────────────────────────────────────── */
+function useCountUp(target: number, duration = 1500) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (target === 0) return;
+    const start = Date.now();
+    const startVal = 0;
+    const tick = () => {
+      const elapsed = Date.now() - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(startVal + eased * target));
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [target, duration]);
+  return count;
+}
+
 /* ─── SVG Icons ─────────────────────────────────────────────────── */
 const DiscordIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -152,6 +175,48 @@ const ThreeDPlaceholder = ({ isDark }: { isDark: boolean }) => (
   </div>
 );
 
+/* ─── Visitor Counter Badge ─────────────────────────────────────── */
+function VisitorBadge({ count, loading, accent, muted, pageBg }: {
+  count: number; loading: boolean; accent: string; muted: string; pageBg: string;
+}) {
+  const animated = useCountUp(count);
+  const formatted = animated.toLocaleString();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.5 }}
+      className="mt-3 p-2.5 inline-flex items-center gap-3 relative z-10 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[400px]"
+      style={{ backgroundColor: pageBg, border: `1px solid ${muted}33` }}
+    >
+      {/* Pulsing eye icon */}
+      <div className="relative shrink-0">
+        <Eye size={14} style={{ color: accent }} />
+        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full animate-ping"
+          style={{ backgroundColor: accent, opacity: 0.6 }} />
+        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
+          style={{ backgroundColor: accent }} />
+      </div>
+
+      {loading ? (
+        <div className="flex gap-1">
+          {[0,1,2].map(i => (
+            <span key={i} className="w-1.5 h-1.5 rounded-full animate-bounce"
+              style={{ backgroundColor: muted, animationDelay: `${i * 0.15}s` }} />
+          ))}
+        </div>
+      ) : (
+        <span className="text-xs font-mono" style={{ color: muted }}>
+          Visited{" "}
+          <span className="font-bold" style={{ color: accent }}>{formatted}</span>
+          {" "}times
+        </span>
+      )}
+    </motion.div>
+  );
+}
+
 /* ─── Toggle Switch ─────────────────────────────────────────────── */
 const ThemeSwitch = ({ isDark, onToggle, accent }: { isDark: boolean; onToggle: () => void; accent: string }) => (
   <button
@@ -176,9 +241,32 @@ export default function Portfolio() {
   const [isDark, setIsDark] = useState(true);
   const [kebabOpen, setKebabOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [visitorCount, setVisitorCount] = useState(0);
+  const [visitorLoading, setVisitorLoading] = useState(true);
   const kebabRef = useRef<HTMLDivElement>(null);
   const t = translations[lang];
   const navIds = ["home", "projects", "skills", "about-me", "contacts"];
+
+  /* Track visit and get count */
+  useEffect(() => {
+    const track = async () => {
+      try {
+        const res = await fetch("/api/visitors", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (res.ok) {
+          const data = await res.json() as { count: number };
+          setVisitorCount(data.count);
+        }
+      } catch {
+        // silently ignore if API is unreachable
+      } finally {
+        setVisitorLoading(false);
+      }
+    };
+    track();
+  }, []);
 
   /* Apply theme CSS variables */
   useEffect(() => {
@@ -207,15 +295,13 @@ export default function Portfolio() {
   /* Close kebab when clicking outside */
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (kebabRef.current && !kebabRef.current.contains(e.target as Node)) {
-        setKebabOpen(false);
-      }
+      if (kebabRef.current && !kebabRef.current.contains(e.target as Node)) setKebabOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  /* Lock body scroll when mobile menu is open */
+  /* Lock body scroll when mobile menu open */
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -236,23 +322,27 @@ export default function Portfolio() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  /* Helpers */
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
     setMobileMenuOpen(false);
   };
 
   /* ── Theme-derived values ── */
-  const pageBg      = isDark ? "#282C33"  : "#F5F7FA";
-  const boxBg       = isDark ? "#282C33"  : "#FFFFFF";
-  const accentColor = isDark ? "#C778DD"  : "#1591DC";
-  const accentGlow  = isDark ? "#C778DD88" : "#1591DC88";
-  const headingColor = isDark ? "#ffffff"  : "#1a1a1a";
-  const mutedColor   = isDark ? "#ABB2BF"  : "#444444";
+  const pageBg       = isDark ? "#282C33"   : "#F5F7FA";
+  const boxBg        = isDark ? "#282C33"   : "#FFFFFF";
+  const accentColor  = isDark ? "#C778DD"   : "#1591DC";
+  const accentGlow   = isDark ? "#C778DD88" : "#1591DC88";
+  const headingColor = isDark ? "#ffffff"   : "#1a1a1a";
+  const mutedColor   = isDark ? "#ABB2BF"   : "#444444";
+  const cardBg       = isDark ? "hsl(240 28% 16%)" : "#ffffff";
   const logoFilter   = isDark
     ? "brightness(0) saturate(100%) invert(59%) sepia(48%) saturate(800%) hue-rotate(250deg) brightness(1.1) drop-shadow(0 0 8px #C778DD)"
     : "brightness(0) saturate(100%) invert(39%) sepia(89%) saturate(600%) hue-rotate(173deg) brightness(1.1) drop-shadow(0 0 8px #1591DC)";
-  const cardBg = isDark ? "hsl(240 28% 16%)" : "#ffffff";
+
+  const projects = [
+    { title: t.project1Title, desc: t.project1Desc, tags: t.project1Tags, placeholder: <GraphicDesignPlaceholder isDark={isDark}/>, href: "/projects/graphic-design" },
+    { title: t.project2Title, desc: t.project2Desc, tags: t.project2Tags, placeholder: <ThreeDPlaceholder isDark={isDark}/>, href: "/projects/3d-design" },
+  ];
 
   return (
     <div className="min-h-screen font-mono overflow-x-hidden" style={{ backgroundColor: pageBg, color: headingColor }}>
@@ -269,13 +359,9 @@ export default function Portfolio() {
       {/* ── Header ── */}
       <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b border-border/10" style={{ backgroundColor: pageBg + "ee" }}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-
-          {/* Logo */}
           <a href="#home" onClick={() => scrollTo("home")} className="flex items-center gap-2 shrink-0">
             <img src={logoImg} alt="logo" className="h-7 w-auto" style={{ filter: logoFilter }}/>
-            <span className="text-base sm:text-lg font-bold" style={{ color: accentColor, textShadow: `0 0 10px ${accentGlow}` }}>
-              Eric Santana
-            </span>
+            <span className="text-base sm:text-lg font-bold" style={{ color: accentColor, textShadow: `0 0 10px ${accentGlow}` }}>Eric Santana</span>
           </a>
 
           {/* Desktop nav */}
@@ -287,13 +373,11 @@ export default function Portfolio() {
                 <span style={{ color: accentColor }}>#</span>{t.nav[i]}
               </button>
             ))}
-
-            {/* Lang */}
             <div className="flex items-center gap-1.5 text-sm select-none">
-              <span onClick={() => setLang("EN")} className="cursor-pointer hover:text-primary transition-colors px-1 py-0.5"
+              <span onClick={() => setLang("EN")} className="cursor-pointer hover:text-primary px-1 py-0.5"
                 style={{ color: lang === "EN" ? headingColor : mutedColor }}>EN</span>
               <span style={{ color: mutedColor, opacity: 0.5 }}>/</span>
-              <span onClick={() => setLang("ID")} className="cursor-pointer hover:text-primary transition-colors px-1 py-0.5"
+              <span onClick={() => setLang("ID")} className="cursor-pointer hover:text-primary px-1 py-0.5"
                 style={{ color: lang === "ID" ? headingColor : mutedColor }}>ID</span>
             </div>
 
@@ -316,9 +400,7 @@ export default function Portfolio() {
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-2">
                         {isDark ? <Moon size={14} style={{ color: accentColor }}/> : <Sun size={14} style={{ color: accentColor }}/>}
-                        <span className="text-sm" style={{ color: mutedColor }}>
-                          {isDark ? t.darkMode : t.lightMode}
-                        </span>
+                        <span className="text-sm" style={{ color: mutedColor }}>{isDark ? t.darkMode : t.lightMode}</span>
                       </div>
                       <ThemeSwitch isDark={isDark} onToggle={() => setIsDark(d => !d)} accent={accentColor}/>
                     </div>
@@ -328,9 +410,8 @@ export default function Portfolio() {
             </div>
           </nav>
 
-          {/* Mobile right controls */}
+          {/* Mobile right */}
           <div className="flex md:hidden items-center gap-3">
-            {/* Lang */}
             <div className="flex items-center gap-1 text-xs select-none">
               <span onClick={() => setLang("EN")} className="cursor-pointer px-1 py-1"
                 style={{ color: lang === "EN" ? accentColor : mutedColor }}>EN</span>
@@ -338,7 +419,6 @@ export default function Portfolio() {
               <span onClick={() => setLang("ID")} className="cursor-pointer px-1 py-1"
                 style={{ color: lang === "ID" ? accentColor : mutedColor }}>ID</span>
             </div>
-            {/* Hamburger */}
             <button onClick={() => setMobileMenuOpen(v => !v)}
               className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center"
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
@@ -349,7 +429,7 @@ export default function Portfolio() {
         </div>
       </header>
 
-      {/* ── Mobile Full-Screen Menu ── */}
+      {/* ── Mobile Menu ── */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
@@ -365,19 +445,13 @@ export default function Portfolio() {
                 </button>
               ))}
             </nav>
-
-            {/* Theme toggle inside mobile menu */}
             <div className="mt-10 pt-6 border-t flex items-center justify-between" style={{ borderColor: mutedColor + "33" }}>
               <div className="flex items-center gap-2">
                 {isDark ? <Moon size={16} style={{ color: accentColor }}/> : <Sun size={16} style={{ color: accentColor }}/>}
-                <span className="text-sm" style={{ color: mutedColor }}>
-                  {isDark ? t.darkMode : t.lightMode}
-                </span>
+                <span className="text-sm" style={{ color: mutedColor }}>{isDark ? t.darkMode : t.lightMode}</span>
               </div>
               <ThemeSwitch isDark={isDark} onToggle={() => setIsDark(d => !d)} accent={accentColor}/>
             </div>
-
-            {/* Mobile social links */}
             <div className="mt-6 flex items-center gap-5" style={{ color: mutedColor }}>
               <a href="https://github.com/Enrels" target="_blank" rel="noopener noreferrer" className="hover:text-primary p-1"><Github size={22}/></a>
               <a href="https://www.linkedin.com/in/eric-santana-siahaan-2199a92b9/" target="_blank" rel="noopener noreferrer" className="hover:text-primary p-1"><Linkedin size={22}/></a>
@@ -388,7 +462,6 @@ export default function Portfolio() {
         )}
       </AnimatePresence>
 
-      {/* ── Main Content ── */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-24 sm:pt-32 pb-20">
 
         {/* ── Hero ── */}
@@ -410,14 +483,28 @@ export default function Portfolio() {
 
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
             className="flex-1 flex flex-col items-center relative order-1 md:order-2 w-full">
-            <img src={heroRealImg} alt="Eric Santana" className="w-full max-w-[320px] sm:max-w-[380px] md:max-w-[400px] object-cover object-top rounded-sm relative z-10"
+            <img src={heroRealImg} alt="Eric Santana"
+              className="w-full max-w-[320px] sm:max-w-[380px] md:max-w-[400px] object-cover object-top rounded-sm relative z-10"
               style={{ maxHeight: "420px", borderBottom: `1px solid ${accentColor}` }}/>
+
+            {/* Freelance badge */}
             <div className="mt-3 p-2 inline-flex items-center gap-2 relative z-10 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[400px]"
               style={{ backgroundColor: pageBg, border: `1px solid ${mutedColor}44` }}>
               <div className="w-3 h-3 shrink-0" style={{ backgroundColor: accentColor }}/>
               <span className="text-xs sm:text-sm" style={{ color: mutedColor }}>
                 {t.workingOn} <span style={{ color: headingColor }}>{t.freelance}</span>
               </span>
+            </div>
+
+            {/* Visitor counter */}
+            <div className="w-full max-w-[320px] sm:max-w-[380px] md:max-w-[400px]">
+              <VisitorBadge
+                count={visitorCount}
+                loading={visitorLoading}
+                accent={accentColor}
+                muted={mutedColor}
+                pageBg={pageBg}
+              />
             </div>
           </motion.div>
         </section>
@@ -445,14 +532,10 @@ export default function Portfolio() {
               </h2>
               <div className="w-16 sm:w-32 h-px" style={{ backgroundColor: accentColor + "80" }}/>
             </div>
-            <a href="#" className="text-sm hover:text-primary transition-colors" style={{ color: headingColor }}>{t.viewAll} →</a>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl">
-            {[
-              { title: t.project1Title, desc: t.project1Desc, tags: t.project1Tags, placeholder: <GraphicDesignPlaceholder isDark={isDark}/> },
-              { title: t.project2Title, desc: t.project2Desc, tags: t.project2Tags, placeholder: <ThreeDPlaceholder isDark={isDark}/> },
-            ].map((project, i) => (
+            {projects.map((project, i) => (
               <motion.div key={project.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }} transition={{ delay: i * 0.1 }}
                 className="flex flex-col" style={{ border: `1px solid ${mutedColor}55`, backgroundColor: cardBg }}>
@@ -465,10 +548,11 @@ export default function Portfolio() {
                 <div className="p-4 flex-1 flex flex-col">
                   <h3 className="text-lg sm:text-xl font-medium mb-2" style={{ color: headingColor }}>{project.title}</h3>
                   <p className="text-sm mb-4 flex-1" style={{ color: mutedColor }}>{project.desc}</p>
-                  <Button variant="outline" className="rounded-none h-9 px-4 w-fit text-sm min-h-[44px]"
-                    style={{ borderColor: accentColor, color: headingColor }}>
+                  <a href={project.href} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center rounded-none h-9 px-4 w-fit text-sm min-h-[44px] border transition-opacity hover:opacity-80"
+                    style={{ borderColor: accentColor, color: headingColor, backgroundColor: "transparent" }}>
                     {t.viewBtn} →
-                  </Button>
+                  </a>
                 </div>
               </motion.div>
             ))}
@@ -526,11 +610,11 @@ export default function Portfolio() {
                 )
               )}
             </motion.div>
-
             <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
               className="flex-1 flex justify-center order-1 md:order-2 w-full">
               <div className="flex flex-col items-center">
-                <img src={aboutRealImg} alt="Eric Santana" className="w-full max-w-[280px] sm:max-w-[320px] object-cover rounded-sm"
+                <img src={aboutRealImg} alt="Eric Santana"
+                  className="w-full max-w-[280px] sm:max-w-[320px] object-cover rounded-sm"
                   style={{ maxHeight: "400px", objectPosition: "top", borderBottom: `1px solid ${accentColor}` }}/>
                 <p className="mt-3 text-xs font-mono" style={{ color: accentColor }}>{t.generatedBy}</p>
                 <a href="/cv.pdf" download="CV_Eric_Santana_Siahaan.pdf" target="_blank" rel="noopener noreferrer"
