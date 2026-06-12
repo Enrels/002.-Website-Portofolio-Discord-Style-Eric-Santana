@@ -111,3 +111,66 @@
     scroll-behavior: smooth;
   }
 }
+
+/* ── Button glow & click animations ── */
+@layer utilities {
+  /* Every clickable element gets smooth transitions */
+  button,
+  a,
+  [role="button"] {
+    transition:
+      box-shadow 0.25s ease,
+      transform   0.15s ease,
+      opacity     0.2s ease,
+      filter      0.25s ease;
+  }
+
+  /* Hover → glow pulse */
+  button:hover:not(:disabled),
+  a:hover,
+  [role="button"]:hover {
+    box-shadow:
+      0 0 8px  hsl(var(--primary) / 0.55),
+      0 0 20px hsl(var(--primary) / 0.25),
+      0 0 40px hsl(var(--primary) / 0.10);
+    filter: brightness(1.08);
+  }
+
+  /* Active / click → scale-down + sharper glow flash */
+  button:active:not(:disabled),
+  a:active,
+  [role="button"]:active {
+    transform: scale(0.95);
+    box-shadow:
+      0 0 12px hsl(var(--primary) / 0.80),
+      0 0 30px hsl(var(--primary) / 0.40);
+    filter: brightness(1.15);
+    transition:
+      transform   0.07s ease,
+      box-shadow  0.07s ease,
+      filter      0.07s ease;
+  }
+
+  /* Keep nav logo/icon links subtle — smaller glow */
+  header a:hover,
+  footer a:hover {
+    box-shadow:
+      0 0 6px  hsl(var(--primary) / 0.45),
+      0 0 14px hsl(var(--primary) / 0.18);
+  }
+
+  /* Theme switch toggle: glow around the pill */
+  button[aria-label="Toggle theme"]:hover {
+    box-shadow:
+      0 0 10px hsl(var(--primary) / 0.60),
+      0 0 24px hsl(var(--primary) / 0.30);
+  }
+
+  /* Disable glow on purely decorative / utility wrappers */
+  .no-glow:hover,
+  .no-glow:active {
+    box-shadow: none !important;
+    filter: none !important;
+    transform: none !important;
+  }
+}
