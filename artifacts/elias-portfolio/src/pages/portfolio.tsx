@@ -1,117 +1,270 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Github, Linkedin, Mail, Instagram, Moon, Sun, Download, Menu, X, Eye } from "lucide-react";
+import { Github, Linkedin, Mail, Instagram, Moon, Sun, Download, Menu, X, Eye, Languages, ChevronDown } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 
-import heroRealImg from "@/assets/hero-real.jpeg";
+import heroRealImg  from "@/assets/hero-real.jpeg";
 import aboutRealImg from "@/assets/about-real.jpeg";
-import logoImg from "@/assets/logo.png";
+import logoImg       from "@/assets/logo.png";
+import graphicImg    from "@/assets/project-graphic.jpg";
+import threeDImg     from "@/assets/project-3d.jpg";
+
+/* ─── Language config ───────────────────────────────────────────── */
+type Lang = "EN" | "ID" | "ZH" | "JA" | "DE" | "RU" | "AR";
+
+const langOptions: { code: Lang; label: string; native: string; flag: string }[] = [
+  { code: "EN", label: "English",            native: "English",    flag: "🇬🇧" },
+  { code: "ID", label: "Bahasa Indonesia",   native: "Indonesia",  flag: "🇮🇩" },
+  { code: "ZH", label: "Chinese",            native: "中文",        flag: "🇨🇳" },
+  { code: "JA", label: "Japanese",           native: "日本語",      flag: "🇯🇵" },
+  { code: "DE", label: "German",             native: "Deutsch",    flag: "🇩🇪" },
+  { code: "RU", label: "Russian",            native: "Русский",    flag: "🇷🇺" },
+  { code: "AR", label: "Aramaic",            native: "ܐܪܡܝܐ",      flag: "🏛️" },
+];
 
 /* ─── Translations ─────────────────────────────────────────────── */
-const translations = {
+const t_hero = (accent: string, a: string, b: string) => (
+  <>{a} | <span style={{ color: accent }}>{b.split(" & ")[0]}</span> & <span style={{ color: accent }}>{b.split(" & ")[1]}</span></>
+);
+
+const translations: Record<Lang, {
+  nav: string[]; heroRole: string; heroSub: string; heroBtn: string;
+  workingOn: string; freelance: string;
+  quoteText: string; quoteAuthor: string;
+  projectsTitle: string; viewBtn: string;
+  project1Title: string; project1Desc: string;
+  project2Title: string; project2Desc: string;
+  skillsTitle: string; langTitle: string; toolsTitle: string; othersTitle: string;
+  langSkills: string; toolsSkills: string; othersSkills: string;
+  aboutTitle: string; aboutText: (string | string[])[];
+  downloadCV: string; generatedBy: string;
+  contactsTitle: string; contactsText: string; messageMe: string;
+  footerTagline: string; copyright: string; media: string;
+  darkMode: string; lightMode: string; language: string;
+}> = {
   EN: {
     nav: ["home", "projects", "skills", "about-me", "contacts"],
-    heroTitle: (accent: string) => (
-      <>Junior AI Engineer | <span style={{ color: accent }}>Prompt Specialist</span> & <span style={{ color: accent }}>Automation</span></>
-    ),
+    heroRole: "Junior AI Engineer & Prompt Specialist & Automation",
     heroSub: "I'm currently focused on building AI-powered solutions: prompt engineering, workflow automation, and creative content generation using AI tools.",
-    heroBtn: "Contact me",
-    workingOn: "Currently working on",
-    freelance: "Freelance",
-    visitedTimes: (n: string) => `Visited ${n} times`,
-    visitors: "visitors",
+    heroBtn: "Contact me", workingOn: "Currently working on", freelance: "Freelance",
     quoteText: '"A person who has held a knife for too long may not know what to do when handed a flower."',
     quoteAuthor: "- Enrel",
-    projectsTitle: "projects",
-    viewAll: "View all",
-    viewBtn: "View",
-    project1Title: "Graphic Design",
-    project1Desc: "Creative design work using industry-standard tools.",
-    project1Tags: ["Photoshop", "Canva", "Illustrator", "Adobe Animate"],
-    project2Title: "3D Design",
-    project2Desc: "3D modeling and visualization projects.",
-    project2Tags: ["Blender 3D", "SketchUp"],
-    skillsTitle: "skills",
-    langTitle: "Languages",
+    projectsTitle: "projects", viewBtn: "View",
+    project1Title: "Graphic Design", project1Desc: "Creative design work using industry-standard tools.",
+    project2Title: "3D Design", project2Desc: "3D modeling and visualization projects.",
+    skillsTitle: "skills", langTitle: "Languages", toolsTitle: "Tools", othersTitle: "Others",
     langSkills: "Javascript  C++  Python  etc.",
-    toolsTitle: "Tools",
     toolsSkills: "VSCode  Linux  Windows  Figma  Android Studio  GitHub  Photoshop  Animate  Illustrator  SketchUp  Blender  etc.",
-    othersTitle: "Others",
     othersSkills: "HTML  CSS  EJS  SCSS  etc.",
     aboutTitle: "about-me",
     aboutText: [
       "I'm Eric Santana Siahaan — a creative tech professional transitioning into AI Engineering, with a strong foundation in Graphic Design and Digital Marketing.",
       "My journey in tech started in 2018 after graduating from Vocational High School majoring in Computer and Network Engineering. Since then, I've worn many hats:",
-      [
-        "Graphic Designer — 10+ years of freelance experience using Adobe Photoshop, CorelDraw, Adobe Animate, SketchUp, and Blender 3D.",
-        "Digital Marketing Manager — Managed full digital presence at PT. AMS Global Mandiri (AMS Trans), Sidoarjo, from August 2024 to December 2025.",
-        "AI Engineer (Beginner) — Currently self-learning AI prompting, automation, and building practical AI-powered tools using Python.",
-      ],
-      "What makes me different is the combination: I don't just build — I design and communicate. That means AI solutions I work on are practical, visually clear, and user-friendly.",
+      ["Graphic Designer — 10+ years of freelance experience using Adobe Photoshop, CorelDraw, Adobe Animate, SketchUp, and Blender 3D.",
+       "Digital Marketing Manager — Managed full digital presence at PT. AMS Global Mandiri (AMS Trans), Sidoarjo, from August 2024 to December 2025.",
+       "AI Engineer (Beginner) — Currently self-learning AI prompting, automation, and building practical AI-powered tools using Python."],
+      "What makes me different is the combination: I don't just build — I design and communicate.",
       "I'm open to freelance projects, collaborations, and opportunities in AI, automation, or creative tech.",
     ],
-    downloadCV: "Download CV",
-    generatedBy: "Generated by ChatGPT",
+    downloadCV: "Download CV", generatedBy: "Generated by ChatGPT",
     contactsTitle: "contacts",
     contactsText: "I'm interested in freelance opportunities. However, if you have any other requests or questions, don't hesitate to contact me.",
     messageMe: "Message me here",
     footerTagline: "Junior AI Engineer | Prompt Specialist & Automation",
     copyright: "© Copyright 2026. Made by Eric Santana Siahaan",
-    media: "Media",
-    darkMode: "Dark Mode",
-    lightMode: "Light Mode",
+    media: "Media", darkMode: "Dark Mode", lightMode: "Light Mode", language: "Language",
   },
   ID: {
     nav: ["beranda", "proyek", "keahlian", "tentang-saya", "kontak"],
-    heroTitle: (accent: string) => (
-      <>Junior AI Engineer | <span style={{ color: accent }}>Spesialis Prompt</span> & <span style={{ color: accent }}>Otomasi</span></>
-    ),
+    heroRole: "Junior AI Engineer & Spesialis Prompt & Otomasi",
     heroSub: "Saya saat ini fokus membangun solusi berbasis AI: rekayasa prompt, otomasi alur kerja, dan pembuatan konten kreatif menggunakan alat-alat AI.",
-    heroBtn: "Hubungi saya",
-    workingOn: "Sedang mengerjakan",
-    freelance: "Freelance",
-    visitedTimes: (n: string) => `Dikunjungi ${n} kali`,
-    visitors: "pengunjung",
+    heroBtn: "Hubungi saya", workingOn: "Sedang mengerjakan", freelance: "Freelance",
     quoteText: '"Seseorang yang terlalu lama memegang pisau mungkin tidak tahu harus berbuat apa ketika diberi bunga."',
     quoteAuthor: "- Enrel",
-    projectsTitle: "proyek",
-    viewAll: "Lihat semua",
-    viewBtn: "Lihat",
-    project1Title: "Desain Grafis",
-    project1Desc: "Karya desain kreatif menggunakan alat-alat industri terkemuka.",
-    project1Tags: ["Photoshop", "Canva", "Illustrator", "Adobe Animate"],
-    project2Title: "Desain 3D",
-    project2Desc: "Pemodelan dan visualisasi 3D.",
-    project2Tags: ["Blender 3D", "SketchUp"],
-    skillsTitle: "keahlian",
-    langTitle: "Bahasa",
+    projectsTitle: "proyek", viewBtn: "Lihat",
+    project1Title: "Desain Grafis", project1Desc: "Karya desain kreatif menggunakan alat-alat industri terkemuka.",
+    project2Title: "Desain 3D", project2Desc: "Pemodelan dan visualisasi 3D.",
+    skillsTitle: "keahlian", langTitle: "Bahasa", toolsTitle: "Alat", othersTitle: "Lainnya",
     langSkills: "Javascript  C++  Python  dll.",
-    toolsTitle: "Alat",
     toolsSkills: "VSCode  Linux  Windows  Figma  Android Studio  GitHub  Photoshop  Animate  Illustrator  SketchUp  Blender  dll.",
-    othersTitle: "Lainnya",
     othersSkills: "HTML  CSS  EJS  SCSS  dll.",
     aboutTitle: "tentang-saya",
     aboutText: [
-      "Saya Eric Santana Siahaan — seorang profesional teknologi kreatif yang bertransisi ke AI Engineering, dengan fondasi kuat di Desain Grafis dan Pemasaran Digital.",
-      "Perjalanan saya di bidang teknologi dimulai pada 2018 setelah lulus dari SMK jurusan Teknik Komputer dan Jaringan. Sejak saat itu, saya telah menjalani berbagai peran:",
-      [
-        "Desainer Grafis — 10+ tahun pengalaman freelance menggunakan Adobe Photoshop, CorelDraw, Adobe Animate, SketchUp, dan Blender 3D.",
-        "Manajer Pemasaran Digital — Mengelola kehadiran digital penuh di PT. AMS Global Mandiri (AMS Trans), Sidoarjo, dari Agustus 2024 hingga Desember 2025.",
-        "AI Engineer (Pemula) — Saat ini belajar mandiri tentang prompting AI, otomasi, dan membangun alat praktis berbasis AI menggunakan Python.",
-      ],
-      "Yang membuat saya berbeda adalah kombinasinya: saya tidak hanya membangun — saya juga merancang dan berkomunikasi. Artinya, solusi AI yang saya kerjakan bersifat praktis, jelas secara visual, dan ramah pengguna.",
-      "Saya terbuka untuk proyek freelance, kolaborasi, dan peluang di bidang AI, otomasi, atau teknologi kreatif.",
+      "Saya Eric Santana Siahaan — profesional teknologi kreatif yang bertransisi ke AI Engineering.",
+      "Perjalanan saya di teknologi dimulai 2018 setelah lulus SMK Teknik Komputer dan Jaringan. Sejak itu saya menjalani berbagai peran:",
+      ["Desainer Grafis — 10+ tahun pengalaman freelance: Photoshop, CorelDraw, Animate, SketchUp, Blender 3D.",
+       "Manajer Pemasaran Digital — PT. AMS Global Mandiri (AMS Trans), Sidoarjo, Agustus 2024 – Desember 2025.",
+       "AI Engineer (Pemula) — Belajar mandiri prompting AI, otomasi, dan membangun alat berbasis Python."],
+      "Yang membuat saya berbeda: saya tidak hanya membangun — saya juga merancang dan berkomunikasi.",
+      "Terbuka untuk proyek freelance, kolaborasi, dan peluang di AI, otomasi, atau teknologi kreatif.",
     ],
-    downloadCV: "Unduh CV",
-    generatedBy: "Dibuat oleh ChatGPT",
+    downloadCV: "Unduh CV", generatedBy: "Dibuat oleh ChatGPT",
     contactsTitle: "kontak",
-    contactsText: "Saya tertarik dengan peluang freelance. Namun, jika Anda memiliki permintaan atau pertanyaan lain, jangan ragu untuk menghubungi saya.",
+    contactsText: "Saya tertarik dengan peluang freelance. Jika ada permintaan atau pertanyaan lain, jangan ragu untuk menghubungi saya.",
     messageMe: "Hubungi saya di sini",
     footerTagline: "Junior AI Engineer | Spesialis Prompt & Otomasi",
     copyright: "© Hak Cipta 2026. Dibuat oleh Eric Santana Siahaan",
-    media: "Media",
-    darkMode: "Mode Gelap",
-    lightMode: "Mode Terang",
+    media: "Media", darkMode: "Mode Gelap", lightMode: "Mode Terang", language: "Bahasa",
+  },
+  ZH: {
+    nav: ["首页", "项目", "技能", "关于我", "联系"],
+    heroRole: "初级AI工程师 & 提示词专家 & 自动化",
+    heroSub: "我目前专注于构建AI驱动的解决方案：提示词工程、工作流自动化以及使用AI工具进行创意内容生成。",
+    heroBtn: "联系我", workingOn: "目前正在从事", freelance: "自由职业",
+    quoteText: '"一个拿刀太久的人，当被递上一朵花时，可能不知道该怎么办。"',
+    quoteAuthor: "- Enrel",
+    projectsTitle: "项目", viewBtn: "查看",
+    project1Title: "平面设计", project1Desc: "使用行业标准工具进行创意设计工作。",
+    project2Title: "3D设计", project2Desc: "3D建模与可视化项目。",
+    skillsTitle: "技能", langTitle: "编程语言", toolsTitle: "工具", othersTitle: "其他",
+    langSkills: "Javascript  C++  Python  等",
+    toolsSkills: "VSCode  Linux  Windows  Figma  Android Studio  GitHub  Photoshop  Animate  Illustrator  SketchUp  Blender  等",
+    othersSkills: "HTML  CSS  EJS  SCSS  等",
+    aboutTitle: "关于我",
+    aboutText: [
+      "我是 Eric Santana Siahaan — 一位正在转型为 AI 工程师的创意技术专业人士，在平面设计和数字营销方面有着深厚的基础。",
+      "我的技术之旅始于 2018 年，从职业高中计算机与网络工程专业毕业后开始。自那以来，我担任过多种角色：",
+      ["平面设计师 — 10 年以上的自由职业经验，使用 Photoshop、CorelDraw、Animate、SketchUp 和 Blender 3D。",
+       "数字营销经理 — 负责 PT. AMS Global Mandiri（AMS Trans）的全面数字营销，2024 年 8 月至 2025 年 12 月。",
+       "AI 工程师（初学者）— 目前自学 AI 提示词、自动化，并使用 Python 构建实用的 AI 工具。"],
+      "让我与众不同的是：我不仅仅是构建——我还设计和沟通。",
+      "我对自由职业项目、合作以及 AI、自动化或创意技术领域的机会持开放态度。",
+    ],
+    downloadCV: "下载简历", generatedBy: "由 ChatGPT 生成",
+    contactsTitle: "联系",
+    contactsText: "我对自由职业机会感兴趣。如有其他请求或问题，请随时联系我。",
+    messageMe: "在这里联系我",
+    footerTagline: "初级AI工程师 | 提示词专家 & 自动化",
+    copyright: "© 版权所有 2026。由 Eric Santana Siahaan 制作",
+    media: "媒体", darkMode: "深色模式", lightMode: "浅色模式", language: "语言",
+  },
+  JA: {
+    nav: ["ホーム", "プロジェクト", "スキル", "自己紹介", "連絡先"],
+    heroRole: "Junior AIエンジニア & プロンプトスペシャリスト & オートメーション",
+    heroSub: "AI駆動のソリューション構築に注力しています：プロンプトエンジニアリング、ワークフロー自動化、AIツールを使ったクリエイティブコンテンツ生成。",
+    heroBtn: "お問い合わせ", workingOn: "現在取り組んでいる", freelance: "フリーランス",
+    quoteText: '"長い間ナイフを握っていた人は、花を渡されたとき何をすべきかわからないかもしれない。"',
+    quoteAuthor: "- Enrel",
+    projectsTitle: "プロジェクト", viewBtn: "見る",
+    project1Title: "グラフィックデザイン", project1Desc: "業界標準ツールを使用したクリエイティブデザイン作品。",
+    project2Title: "3Dデザイン", project2Desc: "3Dモデリングと可視化プロジェクト。",
+    skillsTitle: "スキル", langTitle: "言語", toolsTitle: "ツール", othersTitle: "その他",
+    langSkills: "Javascript  C++  Python  など",
+    toolsSkills: "VSCode  Linux  Windows  Figma  Android Studio  GitHub  Photoshop  Animate  Illustrator  SketchUp  Blender  など",
+    othersSkills: "HTML  CSS  EJS  SCSS  など",
+    aboutTitle: "自己紹介",
+    aboutText: [
+      "私は Eric Santana Siahaan です — グラフィックデザインとデジタルマーケティングの強固な基盤を持ち、AIエンジニアリングに移行中のクリエイティブ技術専門家です。",
+      "私の技術の旅は2018年、職業高校のコンピューターネットワーク工学科を卒業後に始まりました。それ以来、様々な役割を担ってきました：",
+      ["グラフィックデザイナー — Photoshop、CorelDraw、Animate、SketchUp、Blender 3Dを使った10年以上のフリーランス経験。",
+       "デジタルマーケティングマネージャー — PT. AMS Global Mandiri（AMS Trans）、シドアルジョ、2024年8月～2025年12月。",
+       "AIエンジニア（初心者）— AIプロンプティング、自動化を独学中。Pythonで実用的なAIツールを構築中。"],
+      "私が違う点：構築するだけでなく、デザインしてコミュニケーションもします。",
+      "フリーランス、コラボレーション、AI・自動化・クリエイティブ技術の機会を歓迎します。",
+    ],
+    downloadCV: "履歴書をダウンロード", generatedBy: "ChatGPTが生成",
+    contactsTitle: "連絡先",
+    contactsText: "フリーランスの機会に興味があります。他のご要望やご質問があれば、お気軽にご連絡ください。",
+    messageMe: "ここからご連絡を",
+    footerTagline: "Junior AIエンジニア | プロンプトスペシャリスト & オートメーション",
+    copyright: "© 著作権 2026。Eric Santana Siahaanが制作",
+    media: "メディア", darkMode: "ダークモード", lightMode: "ライトモード", language: "言語",
+  },
+  DE: {
+    nav: ["Startseite", "Projekte", "Fähigkeiten", "Über mich", "Kontakt"],
+    heroRole: "Junior KI-Ingenieur & Prompt-Spezialist & Automatisierung",
+    heroSub: "Ich konzentriere mich auf den Aufbau KI-gestützter Lösungen: Prompt-Engineering, Workflow-Automatisierung und kreative Inhaltserstellung mit KI-Tools.",
+    heroBtn: "Kontaktiere mich", workingOn: "Arbeite aktuell an", freelance: "Freelance",
+    quoteText: '"Jemand, der zu lange ein Messer gehalten hat, weiß vielleicht nicht, was er tun soll, wenn man ihm eine Blume reicht."',
+    quoteAuthor: "- Enrel",
+    projectsTitle: "Projekte", viewBtn: "Ansehen",
+    project1Title: "Grafikdesign", project1Desc: "Kreative Designarbeit mit branchenführenden Tools.",
+    project2Title: "3D-Design", project2Desc: "3D-Modellierungs- und Visualisierungsprojekte.",
+    skillsTitle: "Fähigkeiten", langTitle: "Sprachen", toolsTitle: "Werkzeuge", othersTitle: "Sonstiges",
+    langSkills: "Javascript  C++  Python  usw.",
+    toolsSkills: "VSCode  Linux  Windows  Figma  Android Studio  GitHub  Photoshop  Animate  Illustrator  SketchUp  Blender  usw.",
+    othersSkills: "HTML  CSS  EJS  SCSS  usw.",
+    aboutTitle: "Über mich",
+    aboutText: [
+      "Ich bin Eric Santana Siahaan — ein kreativer Technikprofi, der in das KI-Engineering wechselt, mit einer starken Grundlage in Grafikdesign und Digital Marketing.",
+      "Mein technischer Werdegang begann 2018 nach dem Abschluss der Berufsschule im Bereich Computer- und Netzwerktechnik. Seitdem habe ich viele Rollen übernommen:",
+      ["Grafikdesigner — 10+ Jahre freiberufliche Erfahrung mit Photoshop, CorelDraw, Animate, SketchUp und Blender 3D.",
+       "Digital Marketing Manager — PT. AMS Global Mandiri (AMS Trans), Sidoarjo, August 2024 – Dezember 2025.",
+       "KI-Ingenieur (Anfänger) — Lerne autodidaktisch KI-Prompting, Automatisierung und baue Python-basierte KI-Tools."],
+      "Was mich auszeichnet: Ich baue nicht nur — ich gestalte und kommuniziere auch.",
+      "Offen für Freelance-Projekte, Kooperationen und Chancen in KI, Automatisierung oder kreativer Technologie.",
+    ],
+    downloadCV: "Lebenslauf herunterladen", generatedBy: "Von ChatGPT generiert",
+    contactsTitle: "Kontakt",
+    contactsText: "Ich bin an Freelance-Möglichkeiten interessiert. Bei anderen Anfragen oder Fragen zögern Sie nicht, mich zu kontaktieren.",
+    messageMe: "Kontaktiere mich hier",
+    footerTagline: "Junior KI-Ingenieur | Prompt-Spezialist & Automatisierung",
+    copyright: "© Urheberrecht 2026. Erstellt von Eric Santana Siahaan",
+    media: "Medien", darkMode: "Dunkelmodus", lightMode: "Hellmodus", language: "Sprache",
+  },
+  RU: {
+    nav: ["Главная", "Проекты", "Навыки", "Обо мне", "Контакты"],
+    heroRole: "Junior ИИ-инженер & Специалист по промптам & Автоматизация",
+    heroSub: "Я сосредоточен на создании решений на основе ИИ: инжиниринг промптов, автоматизация рабочих процессов и генерация творческого контента с помощью ИИ-инструментов.",
+    heroBtn: "Связаться со мной", workingOn: "Сейчас работаю над", freelance: "Фриланс",
+    quoteText: '"Человек, долго державший нож, может не знать, что делать, когда ему протянут цветок."',
+    quoteAuthor: "- Enrel",
+    projectsTitle: "Проекты", viewBtn: "Смотреть",
+    project1Title: "Графический дизайн", project1Desc: "Творческий дизайн с использованием профессиональных инструментов.",
+    project2Title: "3D-дизайн", project2Desc: "Проекты 3D-моделирования и визуализации.",
+    skillsTitle: "Навыки", langTitle: "Языки", toolsTitle: "Инструменты", othersTitle: "Прочее",
+    langSkills: "Javascript  C++  Python  и др.",
+    toolsSkills: "VSCode  Linux  Windows  Figma  Android Studio  GitHub  Photoshop  Animate  Illustrator  SketchUp  Blender  и др.",
+    othersSkills: "HTML  CSS  EJS  SCSS  и др.",
+    aboutTitle: "Обо мне",
+    aboutText: [
+      "Я Eric Santana Siahaan — творческий технический специалист, переходящий в область ИИ-инженерии с прочной базой в графическом дизайне и цифровом маркетинге.",
+      "Мой технический путь начался в 2018 году после окончания профессиональной школы по специальности компьютерные сети. С тех пор я выполнял множество ролей:",
+      ["Графический дизайнер — 10+ лет фриланса: Photoshop, CorelDraw, Animate, SketchUp, Blender 3D.",
+       "Менеджер по цифровому маркетингу — PT. AMS Global Mandiri (AMS Trans), Сидоарджо, август 2024 – декабрь 2025.",
+       "ИИ-инженер (начинающий) — самостоятельно изучаю ИИ-промптинг, автоматизацию, создаю Python-инструменты."],
+      "Моё отличие: я не просто создаю — я также проектирую и коммуницирую.",
+      "Открыт для фриланс-проектов, сотрудничества и возможностей в ИИ, автоматизации или креативных технологиях.",
+    ],
+    downloadCV: "Скачать резюме", generatedBy: "Создано ChatGPT",
+    contactsTitle: "Контакты",
+    contactsText: "Я заинтересован во фриланс-возможностях. Если у вас есть вопросы — не стесняйтесь обращаться.",
+    messageMe: "Напишите мне здесь",
+    footerTagline: "Junior ИИ-инженер | Специалист по промптам & Автоматизация",
+    copyright: "© Авторские права 2026. Создано Eric Santana Siahaan",
+    media: "Медиа", darkMode: "Тёмный режим", lightMode: "Светлый режим", language: "Язык",
+  },
+  AR: {
+    nav: ["ܒܝܬܐ", "ܥܒ̈ܕܐ", "ܡܗܪ̈ܘܬܐ", "ܡܢܝ", "ܩܪܝܒ̈ܐ"],
+    heroRole: "ܡܗܢܕܣ ܙܥܘܪܐ ܕܐܝ ܐܝ & ܡܗܝܪܐ ܕܦܘܩܕ̈ܢܐ & ܐܘܛܘܡܐܛܝܩ",
+    heroSub: "ܣܝܡ ܐܢܐ ܒܒܢܝܢܐ ܕܦܘܢܩ̈ܐ ܕܐܝ ܐܝ: ܗܢܕܘܣ̈ܘܬܐ ܕܦܘܩܕ̈ܢܐ، ܐܘܛܘܡܐܛܝܩ ܕܥܒ̈ܕܐ، ܘܒܪܝܬܐ ܕܛܟ̈ܣܐ ܒܝܕ ܐܘܦܩ̈ܐ ܕܐܝ ܐܝ.",
+    heroBtn: "ܦܓܥ ܒܝ", workingOn: "ܗܫܐ ܦܠܚ ܐܢܐ ܥܠ", freelance: "ܦܪܝܠܐܢܣ",
+    quoteText: '"ܐܢܫ ܕܐܚܕ ܣܟܝܢܐ ܙܒܢܐ ܣܓܝܐܐ، ܡܟܝܠ ܠܐ ܝܕܥ ܡܢ ܢܥܒܕ ܐܡܬܝ ܕܗܒܘ ܠܗ ܗܒܒܐ."',
+    quoteAuthor: "- Enrel",
+    projectsTitle: "ܥܒ̈ܕܐ", viewBtn: "ܚܙܝ",
+    project1Title: "ܨܘܪ̈ܬܐ ܒܝܕ ܡܚܫܒ", project1Desc: "ܥܒ̈ܕܐ ܕܨܘܪ̈ܬܐ ܒܐܘܦܩ̈ܐ ܕܐܘܡܢܘܬܐ.",
+    project2Title: "ܨܘܪ̈ܬܐ ܬܠܬ ܡܡ̈ܕܐ", project2Desc: "ܦܘܠܚ̈ܢܐ ܕܡܘܕܠܝܢܓ ܘܚܙܝܘܬܐ ܕܬܠܬ ܡܡ̈ܕܐ.",
+    skillsTitle: "ܡܗܪ̈ܘܬܐ", langTitle: "ܠܫ̈ܢܐ", toolsTitle: "ܐܘܦܩ̈ܐ", othersTitle: "ܐ̈ܚܪܢܐ",
+    langSkills: "Javascript  C++  Python  ܘܫ̈ܪܟܐ",
+    toolsSkills: "VSCode  Linux  Windows  Figma  Android Studio  GitHub  Photoshop  Blender  ܘܫ̈ܪܟܐ",
+    othersSkills: "HTML  CSS  EJS  SCSS  ܘܫ̈ܪܟܐ",
+    aboutTitle: "ܡܢܝ",
+    aboutText: [
+      "ܐܢܐ ܐܝܡܪ ܐܪܝܩ ܣܐܢܛܐܢܐ ܣܝܐܗܐܐܢ — ܡܗܢܕܣ ܙܐܬܐ ܕܡܬܗܦܟ ܠܗܢܕܘܣ̈ܘܬܐ ܕܐܝ ܐܝ.",
+      "ܫܪܝ ܐܢܐ ܐܘܪܚܐ ܕܝ ܒܬܟܢܘܠܘܓܝܐ ܒܫܢܬ 2018:",
+      ["ܡܨܘܪܢܐ ܕܨܘܪ̈ܬܐ — 10 ܫ̈ܢܝܢ ܘܝܬܝܪ ܕܦܘܠܚܢܐ ܒܝܕ Photoshop، CorelDraw، Blender 3D.",
+       "ܡܕܒܪܢܐ ܕܫܘܩܐ ܕܓܝܓܠܝܐ — PT. AMS Global Mandiri، 2024–2025.",
+       "ܡܗܢܕܣ ܐܝ ܐܝ (ܫܒܪܐ) — ܝܠܦ ܐܢܐ ܗܘܦܩ̈ܐ ܕܐܝ ܐܝ ܒܝܕ Python."],
+      "ܡܕܡ ܕܡܦܪܫ ܠܝ: ܠܐ ܗܘܦܟ ܒܠܚܘܕ — ܐܦ ܡܨܘܪ ܐܢܐ ܘܡܡܠܠ.",
+      "ܦܬܝܚ ܐܢܐ ܠܦܘܠܚ̈ܢܐ، ܫܘܬܦ̈ܘܬܐ، ܘܐܬܪ̈ܘܬܐ ܒܐܝ ܐܝ ܘܬܟܢܘܠܘܓܝܐ ܒܪܝܬܢܝܬܐ.",
+    ],
+    downloadCV: "ܢܚܘܬ ܟܬܒ ܚܝ̈ܐ", generatedBy: "ܒܪܝ ܒܝܕ ChatGPT",
+    contactsTitle: "ܩܪܝܒ̈ܐ",
+    contactsText: "ܣܝܡ ܐܢܐ ܒܐܬܪ̈ܘܬܐ ܕܦܪܝܠܐܢܣ. ܐܢ ܐܝܬ ܫܐܠ̈ܬܐ، ܠܐ ܬܬܟܣܦ ܒܩܪܝܢܝ.",
+    messageMe: "ܒܥܝ ܠܝ ܗܪܟܐ",
+    footerTagline: "ܡܗܢܕܣ ܙܥܘܪܐ ܕܐܝ ܐܝ | ܡܗܝܪܐ ܕܦܘܩܕ̈ܢܐ & ܐܘܛܘܡܐܛܝܩ",
+    copyright: "© ܙܟܘܬܐ 2026. ܥܒܝܕ ܒܝܕ Eric Santana Siahaan",
+    media: "ܡܕܝܐ", darkMode: "ܕܘܟܪܢܐ ܚܫܘܟܐ", lightMode: "ܕܘܟܪܢܐ ܢܗܝܪܐ", language: "ܠܫܢܐ",
   },
 };
 
@@ -121,12 +274,11 @@ function useCountUp(target: number, duration = 1500) {
   useEffect(() => {
     if (target === 0) return;
     const start = Date.now();
-    const startVal = 0;
     const tick = () => {
       const elapsed = Date.now() - start;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.floor(startVal + eased * target));
+      setCount(Math.floor(eased * target));
       if (progress < 1) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
@@ -134,141 +286,82 @@ function useCountUp(target: number, duration = 1500) {
   return count;
 }
 
-/* ─── SVG Icons ─────────────────────────────────────────────────── */
+/* ─── Icons ─────────────────────────────────────────────────────── */
 const DiscordIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
     <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.001.022.015.043.03.056a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
   </svg>
 );
-
 const WhatsAppIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
   </svg>
 );
-
 const DotsPattern = ({ className = "", color }: { className?: string; color?: string }) => (
   <svg className={className} width="84" height="84" viewBox="0 0 84 84" fill="none">
     {Array.from({ length: 5 }).map((_, row) =>
       Array.from({ length: 5 }).map((_, col) => (
-        <circle key={`${row}-${col}`} cx={4 + col * 19} cy={4 + row * 19} r="2" fill={color ?? "currentColor"} opacity="0.3" />
+        <circle key={`${row}-${col}`} cx={4 + col * 19} cy={4 + row * 19} r="2" fill={color ?? "currentColor"} opacity="0.3"/>
       ))
     )}
   </svg>
 );
 
-const GraphicDesignPlaceholder = ({ isDark }: { isDark: boolean }) => (
-  <div className="w-full h-full flex items-center justify-center" style={{ background: isDark ? "linear-gradient(135deg, #1a1a2e 0%, #3d1a78 100%)" : "linear-gradient(135deg, #dbeafe 0%, #c7d2fe 100%)" }}>
-    <div className="text-center">
-      <div className="text-5xl mb-2">🎨</div>
-      <div className="text-xs font-mono" style={{ color: isDark ? "#C778DD" : "#1591DC" }}>Graphic Design</div>
-    </div>
-  </div>
-);
-
-const ThreeDPlaceholder = ({ isDark }: { isDark: boolean }) => (
-  <div className="w-full h-full flex items-center justify-center" style={{ background: isDark ? "linear-gradient(135deg, #0d1b2a 0%, #1b4332 100%)" : "linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)" }}>
-    <div className="text-center">
-      <div className="text-5xl mb-2">🧊</div>
-      <div className="text-xs font-mono" style={{ color: isDark ? "#C778DD" : "#1591DC" }}>3D Design</div>
-    </div>
-  </div>
-);
-
-/* ─── Visitor Counter Badge ─────────────────────────────────────── */
-function VisitorBadge({ count, loading, accent, muted, pageBg }: {
-  count: number; loading: boolean; accent: string; muted: string; pageBg: string;
-}) {
+/* ─── Visitor Badge ─────────────────────────────────────────────── */
+function VisitorBadge({ count, loading, accent, muted, pageBg }: { count: number; loading: boolean; accent: string; muted: string; pageBg: string }) {
   const animated = useCountUp(count);
-  const formatted = animated.toLocaleString();
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
-      className="mt-3 p-2.5 inline-flex items-center gap-3 relative z-10 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[400px]"
-      style={{ backgroundColor: pageBg, border: `1px solid ${muted}33` }}
-    >
-      {/* Pulsing eye icon */}
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+      className="mt-3 p-2.5 inline-flex items-center gap-3 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[400px]"
+      style={{ backgroundColor: pageBg, border: `1px solid ${muted}33` }}>
       <div className="relative shrink-0">
-        <Eye size={14} style={{ color: accent }} />
-        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full animate-ping"
-          style={{ backgroundColor: accent, opacity: 0.6 }} />
-        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
-          style={{ backgroundColor: accent }} />
+        <Eye size={14} style={{ color: accent }}/>
+        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full animate-ping" style={{ backgroundColor: accent, opacity: 0.6 }}/>
+        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full" style={{ backgroundColor: accent }}/>
       </div>
-
-      {loading ? (
-        <div className="flex gap-1">
-          {[0,1,2].map(i => (
-            <span key={i} className="w-1.5 h-1.5 rounded-full animate-bounce"
-              style={{ backgroundColor: muted, animationDelay: `${i * 0.15}s` }} />
-          ))}
-        </div>
-      ) : (
-        <span className="text-xs font-mono" style={{ color: muted }}>
-          Visited{" "}
-          <span className="font-bold" style={{ color: accent }}>{formatted}</span>
-          {" "}times
-        </span>
-      )}
+      {loading
+        ? <div className="flex gap-1">{[0,1,2].map(i => <span key={i} className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: muted, animationDelay: `${i * 0.15}s` }}/>)}</div>
+        : <span className="text-xs font-mono" style={{ color: muted }}>Visited <span className="font-bold" style={{ color: accent }}>{animated.toLocaleString()}</span> times</span>
+      }
     </motion.div>
   );
 }
 
-/* ─── Toggle Switch ─────────────────────────────────────────────── */
+/* ─── Theme Switch ──────────────────────────────────────────────── */
 const ThemeSwitch = ({ isDark, onToggle, accent }: { isDark: boolean; onToggle: () => void; accent: string }) => (
-  <button
-    onClick={onToggle}
-    className="relative inline-flex items-center w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none"
-    style={{ backgroundColor: isDark ? accent : "#ccc" }}
-    aria-label="Toggle theme"
-  >
-    <span
-      className="inline-block w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-300"
-      style={{ transform: isDark ? "translateX(26px)" : "translateX(2px)" }}
-    />
+  <button onClick={onToggle} className="relative inline-flex items-center w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none"
+    style={{ backgroundColor: isDark ? accent : "#ccc" }} aria-label="Toggle theme">
+    <span className="inline-block w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-300"
+      style={{ transform: isDark ? "translateX(26px)" : "translateX(2px)" }}/>
   </button>
 );
-
-type Lang = "EN" | "ID";
 
 /* ─── Portfolio ─────────────────────────────────────────────────── */
 export default function Portfolio() {
   const [activeSection, setActiveSection] = useState("home");
-  const [lang, setLang] = useState<Lang>("EN");
+  const [lang, setLang]     = useState<Lang>("EN");
   const [isDark, setIsDark] = useState(true);
-  const [kebabOpen, setKebabOpen] = useState(false);
+  const [kebabOpen, setKebabOpen]   = useState(false);
+  const [langOpen, setLangOpen]     = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileLangOpen, setMobileLangOpen] = useState(false);
   const [visitorCount, setVisitorCount] = useState(0);
   const [visitorLoading, setVisitorLoading] = useState(true);
   const kebabRef = useRef<HTMLDivElement>(null);
-  const t = translations[lang];
+  const langRef  = useRef<HTMLDivElement>(null);
+  const tr = translations[lang];
   const navIds = ["home", "projects", "skills", "about-me", "contacts"];
+  const isRTL = lang === "AR";
+  const currentLangOption = langOptions.find(l => l.code === lang)!;
 
-  /* Track visit and get count */
+  /* Visitor tracking */
   useEffect(() => {
-    const track = async () => {
-      try {
-        const res = await fetch("/api/visitors", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        });
-        if (res.ok) {
-          const data = await res.json() as { count: number };
-          setVisitorCount(data.count);
-        }
-      } catch {
-        // silently ignore if API is unreachable
-      } finally {
-        setVisitorLoading(false);
-      }
-    };
-    track();
+    fetch("/api/visitors", { method: "POST", headers: { "Content-Type": "application/json" } })
+      .then(r => r.json()).then((d: { count: number }) => setVisitorCount(d.count))
+      .catch(() => {}).finally(() => setVisitorLoading(false));
   }, []);
 
-  /* Apply theme CSS variables */
+  /* Theme CSS vars */
   useEffect(() => {
     const root = document.documentElement;
     if (isDark) {
@@ -292,16 +385,17 @@ export default function Portfolio() {
     }
   }, [isDark]);
 
-  /* Close kebab when clicking outside */
+  /* Outside click for dropdowns */
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const h = (e: MouseEvent) => {
       if (kebabRef.current && !kebabRef.current.contains(e.target as Node)) setKebabOpen(false);
+      if (langRef.current  && !langRef.current.contains(e.target as Node))  setLangOpen(false);
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  /* Lock body scroll when mobile menu open */
+  /* Body scroll lock */
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -309,25 +403,20 @@ export default function Portfolio() {
 
   /* Scroll spy */
   useEffect(() => {
-    const handleScroll = () => {
+    const onScroll = () => {
       for (const id of navIds) {
         const el = document.getElementById(id);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          if (rect.top >= -100 && rect.top <= 200) { setActiveSection(id); break; }
-        }
+        if (el) { const r = el.getBoundingClientRect(); if (r.top >= -100 && r.top <= 200) { setActiveSection(id); break; } }
       }
     };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-    setMobileMenuOpen(false);
-  };
+  const scrollTo = (id: string) => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMobileMenuOpen(false); };
+  const pickLang = (code: Lang) => { setLang(code); setLangOpen(false); setMobileLangOpen(false); };
 
-  /* ── Theme-derived values ── */
+  /* Theme values */
   const pageBg       = isDark ? "#282C33"   : "#F5F7FA";
   const boxBg        = isDark ? "#282C33"   : "#FFFFFF";
   const accentColor  = isDark ? "#C778DD"   : "#1591DC";
@@ -335,57 +424,102 @@ export default function Portfolio() {
   const headingColor = isDark ? "#ffffff"   : "#1a1a1a";
   const mutedColor   = isDark ? "#ABB2BF"   : "#444444";
   const cardBg       = isDark ? "hsl(240 28% 16%)" : "#ffffff";
+  const dropdownBg   = isDark ? "#1e2128"   : "#ffffff";
   const logoFilter   = isDark
     ? "brightness(0) saturate(100%) invert(59%) sepia(48%) saturate(800%) hue-rotate(250deg) brightness(1.1) drop-shadow(0 0 8px #C778DD)"
     : "brightness(0) saturate(100%) invert(39%) sepia(89%) saturate(600%) hue-rotate(173deg) brightness(1.1) drop-shadow(0 0 8px #1591DC)";
 
-  const projects = [
-    { title: t.project1Title, desc: t.project1Desc, tags: t.project1Tags, placeholder: <GraphicDesignPlaceholder isDark={isDark}/>, href: "/projects/graphic-design" },
-    { title: t.project2Title, desc: t.project2Desc, tags: t.project2Tags, placeholder: <ThreeDPlaceholder isDark={isDark}/>, href: "/projects/3d-design" },
+  /* Build hero title from role string */
+  const roleParts = tr.heroRole.split(" & ");
+  const heroTitle = (
+    <>
+      {roleParts[0]} |{" "}
+      <span style={{ color: accentColor }}>{roleParts[1]}</span>
+      {" & "}
+      <span style={{ color: accentColor }}>{roleParts[2]}</span>
+    </>
+  );
+
+  const projectList = [
+    { title: tr.project1Title, desc: tr.project1Desc, tags: ["Photoshop", "Canva", "Illustrator", "Adobe Animate"], img: graphicImg, href: "/projects/graphic-design" },
+    { title: tr.project2Title, desc: tr.project2Desc, tags: ["Blender 3D", "SketchUp"],                              img: threeDImg,  href: "/projects/3d-design" },
   ];
 
-  return (
-    <div className="min-h-screen font-mono overflow-x-hidden" style={{ backgroundColor: pageBg, color: headingColor }}>
+  /* ── Language Dropdown (shared content) ── */
+  const LangList = () => (
+    <div className="py-1 min-w-[220px]">
+      <div className="px-3 py-1.5 text-xs font-mono uppercase tracking-widest mb-1" style={{ color: mutedColor + "80" }}>
+        Select Language
+      </div>
+      {langOptions.map(opt => (
+        <button key={opt.code} onClick={() => pickLang(opt.code)}
+          className="w-full flex items-center gap-3 px-3 py-2 text-sm text-left hover:opacity-80 transition-opacity"
+          style={{ backgroundColor: lang === opt.code ? accentColor + "22" : "transparent", color: lang === opt.code ? accentColor : mutedColor }}>
+          <span className="text-base w-6 shrink-0">{opt.flag}</span>
+          <span className="font-mono">{opt.native}</span>
+          <span className="ml-auto text-xs opacity-60">{opt.label}</span>
+        </button>
+      ))}
+    </div>
+  );
 
-      {/* ── Desktop Sidebar Socials ── */}
+  return (
+    <div className="min-h-screen font-mono overflow-x-hidden" style={{ backgroundColor: pageBg, color: headingColor, direction: isRTL ? "rtl" : "ltr" }}>
+
+      {/* ── Sidebar Socials (desktop) ── */}
       <div className="fixed left-3 top-0 h-full flex-col items-center justify-center gap-4 hidden lg:flex z-40" style={{ color: mutedColor }}>
         <div className="w-px h-24 opacity-30" style={{ backgroundColor: mutedColor }}/>
-        <a href="https://github.com/Enrels" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors p-1"><Github size={20}/></a>
-        <a href="https://www.linkedin.com/in/eric-santana-siahaan-2199a92b9/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors p-1"><Linkedin size={20}/></a>
-        <a href="mailto:santanixproject@gmail.com" className="hover:text-primary transition-colors p-1"><Mail size={20}/></a>
+        <a href="https://github.com/Enrels" target="_blank" rel="noopener noreferrer" className="hover:text-primary p-1"><Github size={20}/></a>
+        <a href="https://www.linkedin.com/in/eric-santana-siahaan-2199a92b9/" target="_blank" rel="noopener noreferrer" className="hover:text-primary p-1"><Linkedin size={20}/></a>
+        <a href="mailto:santanixproject@gmail.com" className="hover:text-primary p-1"><Mail size={20}/></a>
         <div className="w-px h-24 opacity-30" style={{ backgroundColor: mutedColor }}/>
       </div>
 
       {/* ── Header ── */}
       <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b border-border/10" style={{ backgroundColor: pageBg + "ee" }}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+
+          {/* Logo */}
           <a href="#home" onClick={() => scrollTo("home")} className="flex items-center gap-2 shrink-0">
             <img src={logoImg} alt="logo" className="h-7 w-auto" style={{ filter: logoFilter }}/>
             <span className="text-base sm:text-lg font-bold" style={{ color: accentColor, textShadow: `0 0 10px ${accentGlow}` }}>Eric Santana</span>
           </a>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-4 lg:gap-6">
+          <nav className="hidden md:flex items-center gap-3 lg:gap-5">
             {navIds.map((id, i) => (
-              <button key={id} onClick={() => scrollTo(id)}
-                className="text-sm hover:text-primary transition-colors"
+              <button key={id} onClick={() => scrollTo(id)} className="text-sm hover:text-primary transition-colors"
                 style={{ color: activeSection === id ? headingColor : mutedColor }}>
-                <span style={{ color: accentColor }}>#</span>{t.nav[i]}
+                <span style={{ color: accentColor }}>#</span>{tr.nav[i]}
               </button>
             ))}
-            <div className="flex items-center gap-1.5 text-sm select-none">
-              <span onClick={() => setLang("EN")} className="cursor-pointer hover:text-primary px-1 py-0.5"
-                style={{ color: lang === "EN" ? headingColor : mutedColor }}>EN</span>
-              <span style={{ color: mutedColor, opacity: 0.5 }}>/</span>
-              <span onClick={() => setLang("ID")} className="cursor-pointer hover:text-primary px-1 py-0.5"
-                style={{ color: lang === "ID" ? headingColor : mutedColor }}>ID</span>
+
+            {/* Language dropdown */}
+            <div className="relative" ref={langRef}>
+              <button onClick={() => setLangOpen(v => !v)}
+                className="flex items-center gap-1.5 text-sm px-2.5 py-1.5 border transition-colors hover:opacity-80 min-h-[32px]"
+                style={{ borderColor: accentColor + "55", color: mutedColor }}>
+                <Languages size={14} style={{ color: accentColor }}/>
+                <span className="hidden lg:inline">{tr.language}</span>
+                <span className="text-base">{currentLangOption.flag}</span>
+                <ChevronDown size={12} style={{ transform: langOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s", color: accentColor }}/>
+              </button>
+              <AnimatePresence>
+                {langOpen && (
+                  <motion.div initial={{ opacity: 0, scale: 0.95, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -8 }} transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-11 rounded-md shadow-2xl border border-border z-50 overflow-hidden"
+                    style={{ backgroundColor: dropdownBg }}>
+                    <LangList/>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            {/* Kebab */}
+            {/* Kebab (theme) */}
             <div className="relative" ref={kebabRef}>
               <button onClick={() => setKebabOpen(v => !v)}
-                className="flex flex-col items-center justify-center gap-[4px] p-2 min-w-[36px] min-h-[36px]"
-                aria-label="Theme menu">
+                className="flex flex-col items-center justify-center gap-[4px] p-2 min-w-[36px] min-h-[36px]" aria-label="Theme">
                 {[0,1,2].map(i => (
                   <span key={i} className="block w-[4px] h-[4px] rounded-full"
                     style={{ backgroundColor: accentColor, boxShadow: `0 0 6px ${accentGlow}` }}/>
@@ -396,11 +530,11 @@ export default function Portfolio() {
                   <motion.div initial={{ opacity: 0, scale: 0.9, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: -8 }} transition={{ duration: 0.15 }}
                     className="absolute right-0 top-11 rounded-md shadow-2xl border border-border z-50 p-4 min-w-[180px]"
-                    style={{ backgroundColor: isDark ? "#1e2128" : "#ffffff" }}>
+                    style={{ backgroundColor: dropdownBg }}>
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-2">
                         {isDark ? <Moon size={14} style={{ color: accentColor }}/> : <Sun size={14} style={{ color: accentColor }}/>}
-                        <span className="text-sm" style={{ color: mutedColor }}>{isDark ? t.darkMode : t.lightMode}</span>
+                        <span className="text-sm" style={{ color: mutedColor }}>{isDark ? tr.darkMode : tr.lightMode}</span>
                       </div>
                       <ThemeSwitch isDark={isDark} onToggle={() => setIsDark(d => !d)} accent={accentColor}/>
                     </div>
@@ -411,18 +545,10 @@ export default function Portfolio() {
           </nav>
 
           {/* Mobile right */}
-          <div className="flex md:hidden items-center gap-3">
-            <div className="flex items-center gap-1 text-xs select-none">
-              <span onClick={() => setLang("EN")} className="cursor-pointer px-1 py-1"
-                style={{ color: lang === "EN" ? accentColor : mutedColor }}>EN</span>
-              <span style={{ color: mutedColor }}>/</span>
-              <span onClick={() => setLang("ID")} className="cursor-pointer px-1 py-1"
-                style={{ color: lang === "ID" ? accentColor : mutedColor }}>ID</span>
-            </div>
+          <div className="flex md:hidden items-center gap-2">
             <button onClick={() => setMobileMenuOpen(v => !v)}
               className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center"
-              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-              style={{ color: headingColor }}>
+              aria-label={mobileMenuOpen ? "Close" : "Menu"} style={{ color: headingColor }}>
               {mobileMenuOpen ? <X size={22}/> : <Menu size={22}/>}
             </button>
           </div>
@@ -433,25 +559,48 @@ export default function Portfolio() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 flex flex-col pt-20 px-6 pb-10"
+            transition={{ duration: 0.2 }} className="fixed inset-0 z-40 flex flex-col pt-20 px-6 pb-10 overflow-y-auto"
             style={{ backgroundColor: pageBg }}>
-            <nav className="flex flex-col gap-5 mt-4">
+            <nav className="flex flex-col gap-4 mt-4">
               {navIds.map((id, i) => (
-                <button key={id} onClick={() => scrollTo(id)}
-                  className="text-left text-xl font-medium hover:text-primary transition-colors"
+                <button key={id} onClick={() => scrollTo(id)} className="text-left text-xl font-medium hover:text-primary transition-colors"
                   style={{ color: activeSection === id ? accentColor : headingColor }}>
-                  <span style={{ color: accentColor }}>#</span>{t.nav[i]}
+                  <span style={{ color: accentColor }}>#</span>{tr.nav[i]}
                 </button>
               ))}
             </nav>
-            <div className="mt-10 pt-6 border-t flex items-center justify-between" style={{ borderColor: mutedColor + "33" }}>
+
+            {/* Language picker in mobile */}
+            <div className="mt-8 pt-6 border-t" style={{ borderColor: mutedColor + "33" }}>
+              <button onClick={() => setMobileLangOpen(v => !v)}
+                className="flex items-center gap-2 w-full text-left mb-3"
+                style={{ color: headingColor }}>
+                <Languages size={16} style={{ color: accentColor }}/>
+                <span className="font-medium">{tr.language}</span>
+                <span className="text-base ml-1">{currentLangOption.flag}</span>
+                <ChevronDown size={14} className="ml-auto" style={{ transform: mobileLangOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s", color: accentColor }}/>
+              </button>
+              <AnimatePresence>
+                {mobileLangOpen && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }} className="overflow-hidden rounded-md border border-border"
+                    style={{ backgroundColor: dropdownBg }}>
+                    <LangList/>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Theme in mobile */}
+            <div className="mt-4 pt-4 border-t flex items-center justify-between" style={{ borderColor: mutedColor + "33" }}>
               <div className="flex items-center gap-2">
                 {isDark ? <Moon size={16} style={{ color: accentColor }}/> : <Sun size={16} style={{ color: accentColor }}/>}
-                <span className="text-sm" style={{ color: mutedColor }}>{isDark ? t.darkMode : t.lightMode}</span>
+                <span className="text-sm" style={{ color: mutedColor }}>{isDark ? tr.darkMode : tr.lightMode}</span>
               </div>
               <ThemeSwitch isDark={isDark} onToggle={() => setIsDark(d => !d)} accent={accentColor}/>
             </div>
+
+            {/* Social links */}
             <div className="mt-6 flex items-center gap-5" style={{ color: mutedColor }}>
               <a href="https://github.com/Enrels" target="_blank" rel="noopener noreferrer" className="hover:text-primary p-1"><Github size={22}/></a>
               <a href="https://www.linkedin.com/in/eric-santana-siahaan-2199a92b9/" target="_blank" rel="noopener noreferrer" className="hover:text-primary p-1"><Linkedin size={22}/></a>
@@ -468,43 +617,29 @@ export default function Portfolio() {
         <section id="home" className="min-h-[80vh] flex flex-col md:flex-row items-center justify-between gap-10 py-10">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}
             className="flex-1 space-y-5 text-center md:text-left order-2 md:order-1">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold leading-tight" style={{ color: headingColor }}>
-              {t.heroTitle(accentColor)}
-            </h1>
-            <p className="text-sm sm:text-base max-w-lg mx-auto md:mx-0" style={{ color: mutedColor }}>{t.heroSub}</p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold leading-tight" style={{ color: headingColor }}>{heroTitle}</h1>
+            <p className="text-sm sm:text-base max-w-lg mx-auto md:mx-0" style={{ color: mutedColor }}>{tr.heroSub}</p>
             <div className="flex justify-center md:justify-start">
               <Button variant="outline" className="text-sm px-5 py-2 min-h-[44px]"
                 style={{ borderColor: accentColor, color: accentColor }}
-                onClick={() => scrollTo("contacts")}>
-                {t.heroBtn}
-              </Button>
+                onClick={() => scrollTo("contacts")}>{tr.heroBtn}</Button>
             </div>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex-1 flex flex-col items-center relative order-1 md:order-2 w-full">
+            className="flex-1 flex flex-col items-center order-1 md:order-2 w-full">
             <img src={heroRealImg} alt="Eric Santana"
-              className="w-full max-w-[320px] sm:max-w-[380px] md:max-w-[400px] object-cover object-top rounded-sm relative z-10"
+              className="w-full max-w-[320px] sm:max-w-[380px] md:max-w-[400px] object-cover object-top rounded-sm"
               style={{ maxHeight: "420px", borderBottom: `1px solid ${accentColor}` }}/>
-
-            {/* Freelance badge */}
-            <div className="mt-3 p-2 inline-flex items-center gap-2 relative z-10 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[400px]"
+            <div className="mt-3 p-2 inline-flex items-center gap-2 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[400px]"
               style={{ backgroundColor: pageBg, border: `1px solid ${mutedColor}44` }}>
               <div className="w-3 h-3 shrink-0" style={{ backgroundColor: accentColor }}/>
               <span className="text-xs sm:text-sm" style={{ color: mutedColor }}>
-                {t.workingOn} <span style={{ color: headingColor }}>{t.freelance}</span>
+                {tr.workingOn} <span style={{ color: headingColor }}>{tr.freelance}</span>
               </span>
             </div>
-
-            {/* Visitor counter */}
             <div className="w-full max-w-[320px] sm:max-w-[380px] md:max-w-[400px]">
-              <VisitorBadge
-                count={visitorCount}
-                loading={visitorLoading}
-                accent={accentColor}
-                muted={mutedColor}
-                pageBg={pageBg}
-              />
+              <VisitorBadge count={visitorCount} loading={visitorLoading} accent={accentColor} muted={mutedColor} pageBg={pageBg}/>
             </div>
           </motion.div>
         </section>
@@ -512,35 +647,29 @@ export default function Portfolio() {
         {/* ── Quote ── */}
         <section className="py-12 sm:py-20 flex justify-center">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            className="relative inline-block w-full max-w-2xl">
+            className="relative w-full max-w-2xl" dir={isRTL ? "rtl" : "ltr"}>
             <div className="absolute -top-3 -left-3 text-3xl font-serif" style={{ color: accentColor }}>"</div>
-            <div className="p-5 sm:p-6 text-base sm:text-xl" style={{ border: "1px solid #ABB2BF", backgroundColor: boxBg, color: "#ABB2BF" }}>
-              {t.quoteText}
-            </div>
-            <div className="p-3 sm:p-4 text-right" style={{ border: "1px solid #ABB2BF", borderTop: "none", backgroundColor: boxBg, color: "#ABB2BF" }}>
-              {t.quoteAuthor}
-            </div>
+            <div className="p-5 sm:p-6 text-base sm:text-xl" style={{ border: "1px solid #ABB2BF", backgroundColor: boxBg, color: "#ABB2BF" }}>{tr.quoteText}</div>
+            <div className="p-3 sm:p-4 text-right" style={{ border: "1px solid #ABB2BF", borderTop: "none", backgroundColor: boxBg, color: "#ABB2BF" }}>{tr.quoteAuthor}</div>
           </motion.div>
         </section>
 
         {/* ── Projects ── */}
         <section id="projects" className="py-12 sm:py-20">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-8 sm:mb-12">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <h2 className="text-2xl sm:text-3xl font-medium" style={{ color: headingColor }}>
-                <span style={{ color: accentColor }}>#</span>{t.projectsTitle}
-              </h2>
-              <div className="w-16 sm:w-32 h-px" style={{ backgroundColor: accentColor + "80" }}/>
-            </div>
+          <div className="flex items-center gap-3 sm:gap-4 mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-medium" style={{ color: headingColor }}>
+              <span style={{ color: accentColor }}>#</span>{tr.projectsTitle}
+            </h2>
+            <div className="w-16 sm:w-32 h-px" style={{ backgroundColor: accentColor + "80" }}/>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl">
-            {projects.map((project, i) => (
+            {projectList.map((project, i) => (
               <motion.div key={project.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }} transition={{ delay: i * 0.1 }}
                 className="flex flex-col" style={{ border: `1px solid ${mutedColor}55`, backgroundColor: cardBg }}>
+                {/* Project image */}
                 <div className="aspect-video overflow-hidden" style={{ borderBottom: `1px solid ${mutedColor}55` }}>
-                  {project.placeholder}
+                  <img src={project.img} alt={project.title} className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105"/>
                 </div>
                 <div className="p-3 text-xs sm:text-sm" style={{ borderBottom: `1px solid ${mutedColor}55`, color: mutedColor }}>
                   {project.tags.join("  ")}
@@ -549,9 +678,9 @@ export default function Portfolio() {
                   <h3 className="text-lg sm:text-xl font-medium mb-2" style={{ color: headingColor }}>{project.title}</h3>
                   <p className="text-sm mb-4 flex-1" style={{ color: mutedColor }}>{project.desc}</p>
                   <a href={project.href} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center rounded-none h-9 px-4 w-fit text-sm min-h-[44px] border transition-opacity hover:opacity-80"
+                    className="inline-flex items-center justify-center h-9 px-4 w-fit text-sm min-h-[44px] border transition-opacity hover:opacity-80"
                     style={{ borderColor: accentColor, color: headingColor, backgroundColor: "transparent" }}>
-                    {t.viewBtn} →
+                    {tr.viewBtn} →
                   </a>
                 </div>
               </motion.div>
@@ -563,20 +692,15 @@ export default function Portfolio() {
         <section id="skills" className="py-12 sm:py-20">
           <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
             <h2 className="text-2xl sm:text-3xl font-medium" style={{ color: headingColor }}>
-              <span style={{ color: accentColor }}>#</span>{t.skillsTitle}
+              <span style={{ color: accentColor }}>#</span>{tr.skillsTitle}
             </h2>
             <div className="w-16 sm:w-32 h-px" style={{ backgroundColor: accentColor + "80" }}/>
           </div>
           <div className="flex flex-wrap gap-3 sm:gap-4">
-            {[
-              { title: t.langTitle,   skills: t.langSkills },
-              { title: t.toolsTitle,  skills: t.toolsSkills },
-              { title: t.othersTitle, skills: t.othersSkills },
-            ].map((cat, i) => (
+            {[{ title: tr.langTitle, skills: tr.langSkills }, { title: tr.toolsTitle, skills: tr.toolsSkills }, { title: tr.othersTitle, skills: tr.othersSkills }].map((cat, i) => (
               <motion.div key={cat.title} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                className="flex-1 min-w-[150px] max-w-[280px]"
-                style={{ border: "1px solid #ABB2BF", backgroundColor: boxBg }}>
+                className="flex-1 min-w-[150px] max-w-[280px]" style={{ border: "1px solid #ABB2BF", backgroundColor: boxBg }}>
                 <div className="p-2 font-medium text-sm" style={{ borderBottom: "1px solid #ABB2BF", color: "#ABB2BF" }}>{cat.title}</div>
                 <div className="p-2 text-xs sm:text-sm leading-relaxed" style={{ color: "#ABB2BF" }}>{cat.skills}</div>
               </motion.div>
@@ -588,40 +712,34 @@ export default function Portfolio() {
         <section id="about-me" className="py-12 sm:py-20">
           <div className="flex items-center gap-3 sm:gap-4 mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl font-medium" style={{ color: headingColor }}>
-              <span style={{ color: accentColor }}>#</span>{t.aboutTitle}
+              <span style={{ color: accentColor }}>#</span>{tr.aboutTitle}
             </h2>
             <div className="w-24 sm:w-64 h-px" style={{ backgroundColor: accentColor + "80" }}/>
           </div>
           <div className="flex flex-col md:flex-row gap-10 sm:gap-12 items-start">
             <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
               className="flex-1 space-y-4 order-2 md:order-1">
-              {t.aboutText.map((block, i) =>
-                Array.isArray(block) ? (
-                  <ul key={i} className="space-y-2 pl-1">
-                    {block.map((item, j) => (
+              {tr.aboutText.map((block, i) =>
+                Array.isArray(block)
+                  ? <ul key={i} className="space-y-2 pl-1">{block.map((item, j) => (
                       <li key={j} className="flex gap-2 text-sm sm:text-base" style={{ color: mutedColor }}>
-                        <span style={{ color: accentColor }} className="shrink-0 mt-0.5">\</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p key={i} className="text-sm sm:text-base" style={{ color: mutedColor }}>{block}</p>
-                )
+                        <span style={{ color: accentColor }} className="shrink-0 mt-0.5">\</span><span>{item}</span>
+                      </li>))}</ul>
+                  : <p key={i} className="text-sm sm:text-base" style={{ color: mutedColor }}>{block}</p>
               )}
             </motion.div>
             <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
               className="flex-1 flex justify-center order-1 md:order-2 w-full">
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center relative">
+                <DotsPattern className="absolute top-10 left-0 z-0 hidden sm:block" color={accentColor}/>
                 <img src={aboutRealImg} alt="Eric Santana"
-                  className="w-full max-w-[280px] sm:max-w-[320px] object-cover rounded-sm"
+                  className="w-full max-w-[280px] sm:max-w-[320px] object-cover rounded-sm relative z-10"
                   style={{ maxHeight: "400px", objectPosition: "top", borderBottom: `1px solid ${accentColor}` }}/>
-                <p className="mt-3 text-xs font-mono" style={{ color: accentColor }}>{t.generatedBy}</p>
+                <p className="mt-3 text-xs font-mono" style={{ color: accentColor }}>{tr.generatedBy}</p>
                 <a href="/cv.pdf" download="CV_Eric_Santana_Siahaan.pdf" target="_blank" rel="noopener noreferrer"
                   className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-mono transition-opacity hover:opacity-80 min-h-[44px]"
                   style={{ border: `1px solid ${accentColor}`, color: accentColor, backgroundColor: "transparent" }}>
-                  <Download size={14}/>
-                  {t.downloadCV}
+                  <Download size={14}/>{tr.downloadCV}
                 </a>
               </div>
             </motion.div>
@@ -632,23 +750,20 @@ export default function Portfolio() {
         <section id="contacts" className="py-12 sm:py-20">
           <div className="flex items-center gap-3 sm:gap-4 mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl font-medium" style={{ color: headingColor }}>
-              <span style={{ color: accentColor }}>#</span>{t.contactsTitle}
+              <span style={{ color: accentColor }}>#</span>{tr.contactsTitle}
             </h2>
             <div className="w-16 sm:w-32 h-px" style={{ backgroundColor: accentColor + "80" }}/>
           </div>
-          <div className="flex flex-col gap-8 items-start">
+          <div className="flex flex-col gap-8">
             <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-              className="max-w-md text-sm sm:text-base" style={{ color: mutedColor }}>
-              {t.contactsText}
-            </motion.p>
+              className="max-w-md text-sm sm:text-base" style={{ color: mutedColor }}>{tr.contactsText}</motion.p>
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              className="p-5 sm:p-6 w-full max-w-sm"
-              style={{ border: `1px solid ${mutedColor}55`, backgroundColor: cardBg }}>
-              <h3 className="font-medium mb-5 text-base sm:text-lg" style={{ color: headingColor }}>{t.messageMe}</h3>
+              className="p-5 sm:p-6 w-full max-w-sm" style={{ border: `1px solid ${mutedColor}55`, backgroundColor: cardBg }}>
+              <h3 className="font-medium mb-5 text-base sm:text-lg" style={{ color: headingColor }}>{tr.messageMe}</h3>
               <div className="space-y-4 text-sm">
                 <a href="https://wa.me/6287840105200" target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-3 hover:text-primary transition-colors min-h-[40px]" style={{ color: mutedColor }}>
-                  <span style={{ color: accentColor }}><WhatsAppIcon size={16}/></span>+62 878-4010-5200 (ID)
+                  <span style={{ color: accentColor }}><WhatsAppIcon size={16}/></span>+62 878-4010-5200
                 </a>
                 <a href="mailto:santanixproject@gmail.com"
                   className="flex items-center gap-3 hover:text-primary transition-colors min-h-[40px]" style={{ color: mutedColor }}>
@@ -672,27 +787,25 @@ export default function Portfolio() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-start gap-8">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <img src={logoImg} alt="Eric Santana" className="h-6 w-auto" style={{ filter: logoFilter }}/>
+              <img src={logoImg} alt="logo" className="h-6 w-auto" style={{ filter: logoFilter }}/>
               <span className="text-lg font-bold" style={{ color: accentColor, textShadow: `0 0 10px ${accentGlow}` }}>Eric Santana</span>
             </div>
-            <a href="mailto:santanixproject@gmail.com" className="text-xs sm:text-sm block mb-2 hover:text-primary transition-colors" style={{ color: mutedColor }}>
-              santanixproject@gmail.com
-            </a>
-            <p className="text-xs sm:text-sm" style={{ color: mutedColor }}>{t.footerTagline}</p>
+            <a href="mailto:santanixproject@gmail.com" className="text-xs sm:text-sm block mb-2 hover:text-primary" style={{ color: mutedColor }}>santanixproject@gmail.com</a>
+            <p className="text-xs sm:text-sm" style={{ color: mutedColor }}>{tr.footerTagline}</p>
           </div>
           <div>
-            <h3 className="text-lg font-medium mb-4" style={{ color: headingColor }}>{t.media}</h3>
+            <h3 className="text-lg font-medium mb-4" style={{ color: headingColor }}>{tr.media}</h3>
             <div className="flex items-center gap-4" style={{ color: mutedColor }}>
-              <a href="https://github.com/Enrels" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors p-1"><Github size={20}/></a>
-              <a href="https://wa.me/6287840105200" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors p-1"><WhatsAppIcon size={20}/></a>
-              <a href="https://www.linkedin.com/in/eric-santana-siahaan-2199a92b9/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors p-1"><Linkedin size={20}/></a>
-              <a href="https://discord.com/users/Enrel" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors p-1"><DiscordIcon size={20}/></a>
-              <a href="https://www.instagram.com/enrelacuz/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors p-1"><Instagram size={20}/></a>
+              <a href="https://github.com/Enrels" target="_blank" rel="noopener noreferrer" className="hover:text-primary p-1"><Github size={20}/></a>
+              <a href="https://wa.me/6287840105200" target="_blank" rel="noopener noreferrer" className="hover:text-primary p-1"><WhatsAppIcon size={20}/></a>
+              <a href="https://www.linkedin.com/in/eric-santana-siahaan-2199a92b9/" target="_blank" rel="noopener noreferrer" className="hover:text-primary p-1"><Linkedin size={20}/></a>
+              <a href="https://discord.com/users/Enrel" target="_blank" rel="noopener noreferrer" className="hover:text-primary p-1"><DiscordIcon size={20}/></a>
+              <a href="https://www.instagram.com/enrelacuz/" target="_blank" rel="noopener noreferrer" className="hover:text-primary p-1"><Instagram size={20}/></a>
             </div>
           </div>
         </div>
         <div className="text-center text-xs sm:text-sm mt-10" style={{ color: accentColor, textShadow: `0 0 8px ${accentGlow}` }}>
-          {t.copyright}
+          {tr.copyright}
         </div>
       </footer>
     </div>
