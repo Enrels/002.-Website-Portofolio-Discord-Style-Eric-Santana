@@ -114,63 +114,91 @@
 
 /* ── Button glow & click animations ── */
 @layer utilities {
-  /* Every clickable element gets smooth transitions */
+  /* Base transition for every interactive element */
   button,
   a,
   [role="button"] {
     transition:
-      box-shadow 0.25s ease,
-      transform   0.15s ease,
-      opacity     0.2s ease,
-      filter      0.25s ease;
+      box-shadow   0.25s ease,
+      text-shadow  0.25s ease,
+      transform    0.15s ease,
+      filter       0.25s ease,
+      opacity      0.20s ease;
   }
 
-  /* Hover → glow pulse */
+  /* ── Default hover: TEXT glow (no boxy outline) ── */
+  /* Applies to nav links, plain text buttons, dropdown items, etc. */
   button:hover:not(:disabled),
   a:hover,
   [role="button"]:hover {
+    text-shadow:
+      0 0 8px  hsl(var(--primary) / 0.85),
+      0 0 18px hsl(var(--primary) / 0.45);
+    filter: brightness(1.07);
+  }
+
+  /* ── Bordered / filled buttons: BOX glow instead ── */
+  /* Add class .btn-glow to any button that has a visible border/background */
+  .btn-glow:hover:not(:disabled) {
+    text-shadow: none;
+    filter: brightness(1.08);
     box-shadow:
-      0 0 8px  hsl(var(--primary) / 0.55),
-      0 0 20px hsl(var(--primary) / 0.25),
-      0 0 40px hsl(var(--primary) / 0.10);
+      0 0 8px  hsl(var(--primary) / 0.60),
+      0 0 22px hsl(var(--primary) / 0.28),
+      0 0 44px hsl(var(--primary) / 0.10);
+  }
+
+  /* Theme-toggle pill also gets box glow */
+  button[aria-label="Toggle theme"]:hover {
+    text-shadow: none;
+    box-shadow:
+      0 0 10px hsl(var(--primary) / 0.65),
+      0 0 26px hsl(var(--primary) / 0.30);
     filter: brightness(1.08);
   }
 
-  /* Active / click → scale-down + sharper glow flash */
+  /* ── Icon-only links: drop-shadow on the SVG, no text/box outline ── */
+  /* Add class .icon-link to sidebar social icons and footer icon links */
+  .icon-link:hover {
+    text-shadow: none;
+    box-shadow:  none;
+    filter:      none;
+  }
+  .icon-link:hover svg,
+  .icon-link:hover .icon-wrap {
+    filter:
+      drop-shadow(0 0 5px  hsl(var(--primary) / 0.75))
+      drop-shadow(0 0 14px hsl(var(--primary) / 0.35))
+      brightness(1.15);
+  }
+
+  /* ── Active / click: scale-down + flash ── */
   button:active:not(:disabled),
   a:active,
   [role="button"]:active {
     transform: scale(0.95);
-    box-shadow:
-      0 0 12px hsl(var(--primary) / 0.80),
-      0 0 30px hsl(var(--primary) / 0.40);
-    filter: brightness(1.15);
     transition:
-      transform   0.07s ease,
-      box-shadow  0.07s ease,
-      filter      0.07s ease;
+      transform    0.07s ease,
+      box-shadow   0.07s ease,
+      text-shadow  0.07s ease,
+      filter       0.07s ease;
   }
 
-  /* Keep nav logo/icon links subtle — smaller glow */
-  header a:hover,
-  footer a:hover {
+  .btn-glow:active:not(:disabled) {
+    text-shadow: none;
     box-shadow:
-      0 0 6px  hsl(var(--primary) / 0.45),
-      0 0 14px hsl(var(--primary) / 0.18);
+      0 0 14px hsl(var(--primary) / 0.85),
+      0 0 32px hsl(var(--primary) / 0.45);
+    filter: brightness(1.18);
   }
 
-  /* Theme switch toggle: glow around the pill */
-  button[aria-label="Toggle theme"]:hover {
-    box-shadow:
-      0 0 10px hsl(var(--primary) / 0.60),
-      0 0 24px hsl(var(--primary) / 0.30);
-  }
-
-  /* Disable glow on purely decorative / utility wrappers */
+  /* ── Utility: fully suppress all glow ── */
+  .no-glow,
   .no-glow:hover,
   .no-glow:active {
-    box-shadow: none !important;
-    filter: none !important;
-    transform: none !important;
+    box-shadow:  none !important;
+    text-shadow: none !important;
+    filter:      none !important;
+    transform:   none !important;
   }
 }
