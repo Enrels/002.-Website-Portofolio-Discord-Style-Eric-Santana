@@ -8,4 +8,10 @@ router.get("/healthz", (_req, res) => {
   res.json(data);
 });
 
+{
+  "compilerOptions": {
+    "noEmitOnError": false
+  }
+}
+
 export default router;
